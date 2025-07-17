@@ -52,8 +52,8 @@ This digital version allows visitors to:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/takitajwar17/footprints-across-ocean.git
-   cd footprints-across-ocean
+   git clone https://github.com/takitajwar17/a-digital-moving-mountain.git
+   cd a-digital-moving-mountain
    ```
 
 2. **Install dependencies**
