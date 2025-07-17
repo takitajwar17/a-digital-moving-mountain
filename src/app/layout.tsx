@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Footprints Across the Ocean",
+  title: "A Digital Moving Mountain",
   description: "Interactive digital canvas based on 'A Moving Mountain' by Dr. Gan Yu",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Footprints Across the Ocean"
+    title: "A Digital Moving Mountain"
   }
 };
 
@@ -35,7 +35,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#2563eb" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Footprints Across the Ocean" />
+        <meta name="apple-mobile-web-app-title" content="A Digital Moving Mountain" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="shortcut icon" href="/favicon.ico" />
       </head>

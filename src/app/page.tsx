@@ -80,7 +80,7 @@ export default function Home() {
   };
 
   // Handle comment click
-  const handleCommentClick = (comment: any) => {
+  const handleCommentClick = (comment: { id: string; text: string; position: { x: number; y: number }; year: number; timestamp: number }) => {
     console.log('Comment clicked:', comment);
     // TODO: Show comment details modal
   };
@@ -105,7 +105,7 @@ export default function Home() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading Footprints Across the Ocean...</p>
+          <p className="mt-4 text-gray-600">Loading Footprints Across the Ocean&hellip;</p>
         </div>
       </div>
     );
