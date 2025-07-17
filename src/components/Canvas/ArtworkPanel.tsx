@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { ArtworkPanel as ArtworkPanelType } from '@/types/artwork';
 import { Comment } from '@/types/comment';
