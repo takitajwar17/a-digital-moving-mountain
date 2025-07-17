@@ -1,103 +1,191 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useFirebase } from '@/hooks/useFirebase';
+import { useComments } from '@/hooks/useComments';
+import { useCanvas } from '@/hooks/useCanvas';
+import { CommentFilter } from '@/types/comment';
+import { getDeviceType, isKioskMode } from '@/utils/deviceDetection';
+import { detectLanguage } from '@/utils/languageDetection';
+import { findAvailablePosition } from '@/utils/coordinateSystem';
+
+// Layout components
+import MobileLayout from '@/components/Layout/MobileLayout';
+import TabletLayout from '@/components/Layout/TabletLayout';
+import DesktopLayout from '@/components/Layout/DesktopLayout';
+
+// Canvas components
+import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
+
+// Sample data
+import { 
+  sampleArtworkPanels, 
+  sampleComments, 
+  getAvailableYears, 
+  getAvailableLanguages
+} from '@/data/sampleArtwork';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { user, loading: authLoading } = useFirebase();
+  const [filter, setFilter] = useState<CommentFilter>({ approved: true });
+  const { comments, loading: commentsLoading, addNewComment } = useComments(filter);
+  const { settings, updateZoom, updatePan, resetView } = useCanvas();
+  
+  // Device and layout detection
+  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [kiosk, setKiosk] = useState(false);
+  
+  // Current artwork panel
+  const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
+  const currentPanel = sampleArtworkPanels.find(panel => panel.year === currentYear) || sampleArtworkPanels[0];
+  
+  // Comments for current panel
+  const panelComments = [...sampleComments.filter(comment => comment.year === currentYear), ...comments];
+  
+  // Available data for filters
+  const availableYears = getAvailableYears();
+  const availableLanguages = getAvailableLanguages();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Initialize device detection
+  useEffect(() => {
+    setDeviceType(getDeviceType());
+    setKiosk(isKioskMode());
+  }, []);
+
+  // Handle comment addition
+  const handleCommentAdd = async (position: { x: number; y: number }, text: string) => {
+    if (!user) return;
+
+    try {
+      // Find suitable position to avoid collisions
+      const availablePosition = findAvailablePosition(
+        position,
+        panelComments.map(c => c.position),
+        0.05 // 5% minimum distance
+      );
+
+      // Detect language
+      const language = detectLanguage(text).language;
+
+      await addNewComment({
+        text,
+        position: availablePosition,
+        year: currentYear,
+        device: deviceType,
+        inputMethod: deviceType === 'mobile' ? 'touch' : 'keyboard'
+      });
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+    }
+  };
+
+  // Handle comment click
+  const handleCommentClick = (comment: any) => {
+    console.log('Comment clicked:', comment);
+    // TODO: Show comment details modal
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (newFilter: CommentFilter) => {
+    setFilter(newFilter);
+    if (newFilter.year && newFilter.year !== currentYear) {
+      setCurrentYear(newFilter.year);
+    }
+  };
+
+  // Handle year navigation
+  const handleYearChange = (year: number) => {
+    setCurrentYear(year);
+    setFilter({ ...filter, year });
+  };
+
+  // Loading state
+  if (authLoading || commentsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading Footprints Across the Ocean...</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      </div>
+    );
+  }
+
+  // Main artwork panel component
+  const artworkPanelComponent = (
+    <ArtworkPanel
+      panel={currentPanel}
+      comments={panelComments}
+      onCommentAdd={handleCommentAdd}
+      onCommentClick={handleCommentClick}
+      zoomLevel={settings.zoomLevel}
+      onZoomChange={updateZoom}
+      panPosition={settings.panPosition}
+      onPanChange={updatePan}
+      className="w-full h-full"
+    />
+  );
+
+  // Year navigation
+  const yearNavigation = (
+    <div className="flex items-center gap-2 p-4 bg-white border-b border-gray-200 overflow-x-auto">
+      {availableYears.map(year => (
+        <button
+          key={year}
+          onClick={() => handleYearChange(year)}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+            year === currentYear
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {year}
+        </button>
+      ))}
     </div>
+  );
+
+  // Render appropriate layout based on device type
+  if (deviceType === 'mobile') {
+    return (
+      <MobileLayout
+        filter={filter}
+        onFilterChange={handleFilterChange}
+        availableYears={availableYears}
+        availableLanguages={availableLanguages}
+      >
+        {yearNavigation}
+        {artworkPanelComponent}
+      </MobileLayout>
+    );
+  }
+
+  if (deviceType === 'tablet') {
+    return (
+      <TabletLayout
+        filter={filter}
+        onFilterChange={handleFilterChange}
+        availableYears={availableYears}
+        availableLanguages={availableLanguages}
+        isKioskMode={kiosk}
+      >
+        {yearNavigation}
+        {artworkPanelComponent}
+      </TabletLayout>
+    );
+  }
+
+  // Desktop layout
+  return (
+    <DesktopLayout
+      filter={filter}
+      onFilterChange={handleFilterChange}
+      availableYears={availableYears}
+      availableLanguages={availableLanguages}
+      totalComments={panelComments.length}
+    >
+      {yearNavigation}
+      {artworkPanelComponent}
+    </DesktopLayout>
   );
 }
