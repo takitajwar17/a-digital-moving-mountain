@@ -57,7 +57,7 @@ export default function DesktopLayout({
                   Footprints Across the Ocean
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  A digital interpretation of "A Moving Mountain" by Dr. Gan Yu
+                  A digital interpretation of &quot;A Moving Mountain&quot; by Dr. Gan Yu
                 </p>
               </div>
             </div>
