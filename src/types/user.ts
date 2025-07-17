@@ -38,5 +38,5 @@ export interface UserActivity {
   sessionId: string;
   type: 'comment' | 'view' | 'filter' | 'zoom' | 'pan';
   timestamp: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
