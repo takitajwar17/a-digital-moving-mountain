@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 // Check if Firebase environment variables are configured
 const hasFirebaseConfig = !!(

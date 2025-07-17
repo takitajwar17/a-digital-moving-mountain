@@ -9,8 +9,7 @@ import {
   where, 
   orderBy, 
   limit,
-  onSnapshot,
-  Timestamp
+  onSnapshot
 } from 'firebase/firestore';
 import { signInAnonymously, User as FirebaseUser } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase';
@@ -158,7 +157,7 @@ export const logUserActivity = async (activity: {
   userId: string;
   sessionId: string;
   type: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }): Promise<void> => {
   const activityCollection = collection(db, 'userActivities');
   await addDoc(activityCollection, {
