@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { ArtworkPanel as ArtworkPanelType } from '@/types/artwork';
 import { Comment } from '@/types/comment';
@@ -35,6 +35,14 @@ export default function ArtworkPanel({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [commentPosition, setCommentPosition] = useState<{ x: number; y: number } | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Reset image state when panel changes
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [panel.imageUrl]);
 
   // Handle canvas click for adding comments
   const handleCanvasClick = (event: React.MouseEvent) => {
@@ -88,6 +96,23 @@ export default function ArtworkPanel({
     setCommentPosition(null);
   };
 
+  // Handle image load
+  const handleImageLoad = () => {
+    console.log(`✅ Image loaded for ${panel.year}: ${panel.imageUrl}`);
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  // Handle image error
+  const handleImageError = () => {
+    console.warn(`❌ Failed to load image for ${panel.year}: ${panel.imageUrl}`);
+    setImageError(true);
+    setImageLoaded(false);
+  };
+
+  // Determine if we should show loading state
+  const shouldShowLoading = !imageLoaded && !imageError;
+
   return (
     <div className={`relative overflow-hidden bg-gray-100 ${className}`}>
       {/* Zoom Controls */}
@@ -124,28 +149,86 @@ export default function ArtworkPanel({
             alt={`${panel.title} - ${panel.year}`}
             width={panel.dimensions.width}
             height={panel.dimensions.height}
-            className="block"
-            priority
+            className={`block transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            priority={true}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+            }}
           />
 
-          {/* Comment Overlay */}
-          <CommentOverlay
-            comments={comments}
-            onCommentClick={onCommentClick}
-            panelDimensions={panel.dimensions}
-            isAddingComment={isAddingComment}
-            commentPosition={commentPosition}
-            onCommentSubmit={handleCommentSubmit}
-            onCommentCancel={handleCommentCancel}
-          />
+          {/* Loading overlay - only show if image is not loaded and not errored */}
+          {shouldShowLoading && (
+            <div 
+              className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse flex items-center justify-center"
+              style={{
+                width: panel.dimensions.width,
+                height: panel.dimensions.height,
+              }}
+            >
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-sm text-gray-600">Loading {panel.year}...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Error state */}
+          {imageError && (
+            <div 
+              className="absolute inset-0 bg-red-50 flex items-center justify-center border-2 border-red-200 border-dashed"
+              style={{
+                width: panel.dimensions.width,
+                height: panel.dimensions.height,
+              }}
+            >
+              <div className="text-center text-red-600">
+                <div className="w-8 h-8 mx-auto mb-2">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <p className="text-sm">Failed to load image</p>
+                <p className="text-xs mt-1">{panel.year}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Comment Overlay - only show when image is loaded */}
+          {imageLoaded && (
+            <CommentOverlay
+              comments={comments}
+              onCommentClick={onCommentClick}
+              panelDimensions={panel.dimensions}
+              isAddingComment={isAddingComment}
+              commentPosition={commentPosition}
+              onCommentSubmit={handleCommentSubmit}
+              onCommentCancel={handleCommentCancel}
+            />
+          )}
         </div>
       </div>
 
       {/* Panel Info */}
-      <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-2 rounded">
+      <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-2 rounded backdrop-blur-sm">
         <h3 className="font-semibold">{panel.title}</h3>
         <p className="text-sm">{panel.year}</p>
-        <p className="text-xs">{comments.length} comments</p>
+        <p className="text-xs">
+          {comments.length} comment{comments.length !== 1 ? 's' : ''}
+          {!imageLoaded && !imageError && (
+            <span className="ml-2 text-yellow-300">⏳</span>
+          )}
+          {imageError && (
+            <span className="ml-2 text-red-300">⚠️</span>
+          )}
+        </p>
       </div>
     </div>
   );

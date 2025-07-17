@@ -1,6 +1,7 @@
 const CACHE_NAME = 'footprints-across-ocean-v1';
 const STATIC_CACHE_NAME = 'footprints-static-v1';
 const DYNAMIC_CACHE_NAME = 'footprints-dynamic-v1';
+const ARTWORK_CACHE_NAME = 'footprints-artwork-v1';
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
@@ -11,7 +12,7 @@ const STATIC_ASSETS = [
   '/icon-512x512.png',
 ];
 
-// Artwork images to cache
+// Artwork images to cache with high priority
 const ARTWORK_IMAGES = [
   '/images/A Moving Mountain %231.jpg',
   '/images/A Moving Mountain %232.jpg',
@@ -26,23 +27,40 @@ const ARTWORK_IMAGES = [
   '/images/A Moving Mountain Dow Jones°Ø first Decade of the 21st Century.jpg'
 ];
 
-// Install event - cache static assets
+// Install event - cache static assets and artwork images
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   
   event.waitUntil(
     Promise.all([
+      // Cache static assets
       caches.open(STATIC_CACHE_NAME).then((cache) => {
         console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       }),
-      caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+      // Cache artwork images with high priority
+      caches.open(ARTWORK_CACHE_NAME).then((cache) => {
         console.log('Service Worker: Pre-caching artwork images');
-        return cache.addAll(ARTWORK_IMAGES);
+        return Promise.all(
+          ARTWORK_IMAGES.map(async (imageUrl) => {
+            try {
+              const response = await fetch(imageUrl);
+              if (response.ok) {
+                await cache.put(imageUrl, response);
+                console.log(`✅ Cached: ${imageUrl}`);
+              } else {
+                console.warn(`⚠️ Failed to cache: ${imageUrl} (${response.status})`);
+              }
+            } catch (error) {
+              console.warn(`⚠️ Error caching: ${imageUrl}`, error);
+            }
+          })
+        );
       })
     ])
   );
   
+  // Force activation of new service worker
   self.skipWaiting();
 });
 
@@ -55,8 +73,8 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== STATIC_CACHE_NAME && 
-              cacheName !== DYNAMIC_CACHE_NAME &&
-              cacheName !== CACHE_NAME) {
+              cacheName !== DYNAMIC_CACHE_NAME && 
+              cacheName !== ARTWORK_CACHE_NAME) {
             console.log('Service Worker: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -68,7 +86,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - serve from cache with different strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -78,186 +96,157 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Skip Firebase and external API calls
+  // Skip Firebase and external requests
   if (url.origin !== location.origin) {
     return;
   }
   
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      // Return cached version if available
-      if (cachedResponse) {
-        console.log('Service Worker: Serving from cache:', request.url);
-        return cachedResponse;
+    (async () => {
+      // Strategy 1: Cache First for artwork images (instant loading)
+      if (ARTWORK_IMAGES.some(image => request.url.includes(image))) {
+        console.log('🖼️ Serving artwork image from cache:', request.url);
+        
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        
+        // If not in cache, fetch and cache
+        try {
+          const response = await fetch(request);
+          if (response.ok) {
+            const cache = await caches.open(ARTWORK_CACHE_NAME);
+            cache.put(request, response.clone());
+          }
+          return response;
+        } catch (error) {
+          console.error('Failed to fetch artwork image:', error);
+          return new Response('Image not available', { status: 404 });
+        }
       }
       
-      // Otherwise fetch from network
-      return fetch(request).then((response) => {
-        // Don't cache if response is not successful
-        if (!response || response.status !== 200 || response.type !== 'basic') {
+      // Strategy 2: Cache First for static assets
+      if (STATIC_ASSETS.some(asset => request.url.endsWith(asset))) {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        
+        try {
+          const response = await fetch(request);
+          if (response.ok) {
+            const cache = await caches.open(STATIC_CACHE_NAME);
+            cache.put(request, response.clone());
+          }
           return response;
+        } catch (error) {
+          return cachedResponse || new Response('Offline', { status: 503 });
         }
+      }
+      
+      // Strategy 3: Network First for dynamic content
+      try {
+        const response = await fetch(request);
         
-        // Clone the response as it can only be consumed once
-        const responseToCache = response.clone();
-        
-        // Determine which cache to use
-        let cacheName = DYNAMIC_CACHE_NAME;
-        
-        // Use static cache for HTML, CSS, JS
-        if (request.url.includes('.html') || 
-            request.url.includes('.css') || 
-            request.url.includes('.js') ||
-            request.url.endsWith('/')) {
-          cacheName = STATIC_CACHE_NAME;
+        // Cache successful responses
+        if (response.ok && response.status < 400) {
+          const cache = await caches.open(DYNAMIC_CACHE_NAME);
+          cache.put(request, response.clone());
         }
-        
-        // Cache the response
-        caches.open(cacheName).then((cache) => {
-          console.log('Service Worker: Caching new resource:', request.url);
-          cache.put(request, responseToCache);
-        });
         
         return response;
-      }).catch(() => {
-        // Network failed, try to serve offline page for navigation requests
-        if (request.destination === 'document') {
-          return caches.match('/offline.html');
+      } catch (error) {
+        // Fallback to cache
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
         }
         
-        // For images, return a placeholder
+        // Ultimate fallback
         if (request.destination === 'image') {
-          return new Response(
-            '<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#f3f4f6"/><text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="16" fill="#6b7280">Image unavailable offline</text></svg>',
-            { headers: { 'Content-Type': 'image/svg+xml' } }
-          );
+          return new Response('Image not available', { status: 404 });
         }
-      });
-    })
+        
+        return new Response('Offline', { status: 503 });
+      }
+    })()
   );
 });
 
-// Background sync for offline comment submission
+// Background sync for offline comments (future enhancement)
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'background-sync-comments') {
-    console.log('Service Worker: Background sync for comments');
-    event.waitUntil(syncOfflineComments());
+  if (event.tag === 'background-sync') {
+    event.waitUntil(
+      // TODO: Implement offline comment sync
+      console.log('Background sync triggered')
+    );
   }
 });
 
-// Handle offline comment synchronization
-async function syncOfflineComments() {
-  try {
-    const cache = await caches.open(DYNAMIC_CACHE_NAME);
-    const offlineComments = await cache.match('/offline-comments');
-    
-    if (offlineComments) {
-      const comments = await offlineComments.json();
-      
-      // Attempt to sync each comment
-      for (const comment of comments) {
-        try {
-          await fetch('/api/comments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(comment)
-          });
-          console.log('Service Worker: Synced offline comment:', comment.id);
-        } catch (error) {
-          console.error('Service Worker: Failed to sync comment:', error);
-        }
-      }
-      
-      // Clear offline comments after successful sync
-      await cache.delete('/offline-comments');
-    }
-  } catch (error) {
-    console.error('Service Worker: Background sync failed:', error);
-  }
-}
-
-// Push notifications for real-time updates
+// Push notification handler (future enhancement)
 self.addEventListener('push', (event) => {
-  console.log('Service Worker: Push received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'New activity on Footprints Across the Ocean',
-    icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
-    vibrate: [200, 100, 200],
-    tag: 'footprints-notification',
-    actions: [
-      {
-        action: 'open',
-        title: 'View',
-        icon: '/icon-192x192.png'
-      },
-      {
-        action: 'close',
-        title: 'Close'
-      }
-    ]
-  };
-  
-  event.waitUntil(
-    self.registration.showNotification('Footprints Across the Ocean', options)
-  );
+  if (event.data) {
+    const data = event.data.json();
+    
+    event.waitUntil(
+      self.registration.showNotification(data.title, {
+        body: data.body,
+        icon: '/icon-192x192.png',
+        badge: '/icon-192x192.png',
+        tag: 'comment-notification',
+        renotify: true,
+        actions: [
+          {
+            action: 'view',
+            title: 'View Comment',
+            icon: '/icon-192x192.png'
+          }
+        ]
+      })
+    );
+  }
 });
 
-// Handle notification clicks
+// Notification click handler
 self.addEventListener('notificationclick', (event) => {
-  console.log('Service Worker: Notification clicked');
-  
   event.notification.close();
   
-  if (event.action === 'open') {
+  if (event.action === 'view') {
     event.waitUntil(
       clients.openWindow('/')
     );
   }
 });
 
-// Handle message from main thread
+// Cache cleanup - remove old entries periodically
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-  
-  if (event.data && event.data.type === 'CACHE_ARTWORK') {
+  if (event.data && event.data.type === 'CACHE_CLEANUP') {
     event.waitUntil(
-      caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-        return cache.add(event.data.url);
-      })
+      (async () => {
+        const cacheNames = await caches.keys();
+        const dynamicCache = await caches.open(DYNAMIC_CACHE_NAME);
+        const keys = await dynamicCache.keys();
+        
+        // Remove entries older than 7 days
+        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        
+        await Promise.all(
+          keys.map(async (request) => {
+            const response = await dynamicCache.match(request);
+            if (response) {
+              const dateHeader = response.headers.get('date');
+              if (dateHeader && new Date(dateHeader).getTime() < oneWeekAgo) {
+                await dynamicCache.delete(request);
+              }
+            }
+          })
+        );
+        
+        console.log('Cache cleanup completed');
+      })()
     );
   }
 });
 
-// Periodic background sync for updates
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'content-sync') {
-    event.waitUntil(syncContent());
-  }
-});
-
-async function syncContent() {
-  try {
-    console.log('Service Worker: Periodic sync - checking for updates');
-    
-    // Check for new comments or artwork updates
-    const response = await fetch('/api/sync-check');
-    const updates = await response.json();
-    
-    if (updates.hasNewComments) {
-      // Notify all clients about new comments
-      const clients = await self.clients.matchAll();
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'NEW_COMMENTS',
-          count: updates.newCommentCount
-        });
-      });
-    }
-  } catch (error) {
-    console.error('Service Worker: Periodic sync failed:', error);
-  }
-}
+console.log('Service Worker: Loaded and ready for artwork caching! 🎨');
