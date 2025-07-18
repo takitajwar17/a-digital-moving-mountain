@@ -183,35 +183,35 @@ export default function Home() {
 
       {/* Current panel info */}
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-lg">{currentPanel.title}</h3>
-        <p className="text-gray-600 mb-2">{currentPanel.year}</p>
-        <p className="text-sm text-gray-500">
+        <h3 className="font-semibold text-lg text-gray-900">{currentPanel.title}</h3>
+        <p className="text-gray-800 mb-2 font-medium">{currentPanel.year}</p>
+        <p className="text-sm text-gray-700">
           {panelComments.length} comment{panelComments.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* Zoom controls */}
       <div className="p-4 border-b border-gray-200">
-        <h4 className="font-medium mb-3">Zoom</h4>
+        <h4 className="font-medium mb-3 text-gray-900">Zoom</h4>
         <div className="flex items-center gap-2">
           <button
             onClick={() => updateZoom(Math.max(settings.zoomLevel / 1.2, 0.5))}
-            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-gray-900 font-medium"
           >
             −
           </button>
-          <span className="text-sm font-mono min-w-[50px] text-center">
+          <span className="text-sm font-mono min-w-[50px] text-center text-gray-900 font-medium">
             {Math.round(settings.zoomLevel * 100)}%
           </span>
           <button
             onClick={() => updateZoom(Math.min(settings.zoomLevel * 1.2, 3))}
-            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-gray-900 font-medium"
           >
             +
           </button>
           <button
             onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
-            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition-colors text-sm"
+            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-sm text-gray-900 font-medium"
           >
             Reset
           </button>
@@ -219,9 +219,9 @@ export default function Home() {
       </div>
 
       {/* Instructions */}
-      <div className="p-4 text-sm text-gray-600">
-        <p className="mb-2">Click on the image to add a comment</p>
-        <p>Drag to pan, use zoom controls to explore</p>
+      <div className="p-4 text-sm text-gray-800">
+        <p className="mb-2 font-medium">Click on the image to add a comment</p>
+        <p className="font-medium">Drag to pan, use zoom controls to explore</p>
       </div>
     </div>
   );
