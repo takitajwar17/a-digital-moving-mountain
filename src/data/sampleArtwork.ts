@@ -6,7 +6,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2000',
     year: 2000,
     title: 'New Millennium Optimism',
-    imageUrl: '/images/A Moving Mountain %231.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %231.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -20,7 +20,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2001',
     year: 2001,
     title: 'September 11th Impact',
-    imageUrl: '/images/A Moving Mountain %232.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %232.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -34,7 +34,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2002',
     year: 2002,
     title: 'Corporate Trust Erosion',
-    imageUrl: '/images/A Moving Mountain %233.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %233.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -48,7 +48,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2003',
     year: 2003,
     title: 'War and Market Volatility',
-    imageUrl: '/images/A Moving Mountain %234.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %234.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -62,7 +62,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2004',
     year: 2004,
     title: 'Economic Recovery',
-    imageUrl: '/images/A Moving Mountain %235.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %235.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -76,7 +76,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2005',
     year: 2005,
     title: 'Housing Market Surge',
-    imageUrl: '/images/A Moving Mountain %236.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %236.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -90,7 +90,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2006',
     year: 2006,
     title: 'Subprime Warnings',
-    imageUrl: '/images/A Moving Mountain %237.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %237.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -104,7 +104,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2007',
     year: 2007,
     title: 'Credit Crisis Emergence',
-    imageUrl: '/images/A Moving Mountain %238.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %238.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -118,7 +118,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2008',
     year: 2008,
     title: 'Great Financial Crisis',
-    imageUrl: '/images/A Moving Mountain %239.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %239.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {
@@ -132,7 +132,7 @@ export const sampleArtworkPanels: ArtworkPanel[] = [
     id: 'panel-2009',
     year: 2009,
     title: 'Market Bottom & Hope',
-    imageUrl: '/images/A Moving Mountain %2310.jpg',
+    imageUrl: '/images/optimized/A Moving Mountain %2310.jpg',
     dimensions: { width: 1200, height: 800 },
     comments: [],
     metadata: {

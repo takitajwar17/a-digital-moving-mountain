@@ -137,7 +137,7 @@ export default function ArtworkPanel({
         >
           <Image
             src={panel.imageUrl}
-            alt={`${panel.title} - ${panel.year}`}
+            alt={`Artwork ${panel.year}`}
             width={panel.dimensions.width}
             height={panel.dimensions.height}
             className={`block transition-opacity duration-500 ${
@@ -148,7 +148,7 @@ export default function ArtworkPanel({
             onError={handleImageError}
             placeholder="blur"
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
             style={{
               maxWidth: 'none',
               height: '100vh',

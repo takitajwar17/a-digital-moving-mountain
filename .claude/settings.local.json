@@ -6,7 +6,10 @@
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
       "Bash(rm:*)",
-      "Bash(npx next lint:*)"
+      "Bash(npx next lint:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

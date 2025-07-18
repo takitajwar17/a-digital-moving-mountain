@@ -6,13 +6,7 @@ import { useCanvas } from '@/hooks/useCanvas';
 import { useImagePreloader, usePreloadStats } from '@/hooks/useImagePreloader';
 import { CommentFilter } from '@/types/comment';
 import { getDeviceType, isKioskMode } from '@/utils/deviceDetection';
-// No need for detectLanguage import here as it's handled in useComments
 import { findAvailablePosition } from '@/utils/coordinateSystem';
-
-// Layout components
-import MobileLayout from '@/components/Layout/MobileLayout';
-import TabletLayout from '@/components/Layout/TabletLayout';
-import DesktopLayout from '@/components/Layout/DesktopLayout';
 
 // Canvas components
 import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
@@ -21,18 +15,17 @@ import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
 import { 
   sampleArtworkPanels, 
   sampleComments, 
-  getAvailableYears, 
-  getAvailableLanguages
+  getAvailableYears
 } from '@/data/sampleArtwork';
 
 export default function Home() {
   const [filter, setFilter] = useState<CommentFilter>({ approved: true });
-  const { comments, loading: commentsLoading, addNewComment, clearComments } = useComments(filter);
-  const { settings, updateZoom, updatePan, resetView } = useCanvas();
+  const { comments, addNewComment } = useComments(filter);
+  const { settings, updateZoom, updatePan } = useCanvas();
   
   // Device and layout detection
   const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
-  const [kiosk, setKiosk] = useState(false);
+  const [, setKiosk] = useState(false);
   
   // Current artwork panel
   const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
@@ -43,20 +36,28 @@ export default function Home() {
   
   // Available data for filters
   const availableYears = getAvailableYears();
-  const availableLanguages = getAvailableLanguages();
 
-  // Debug mode (only in development)
-  const [showDebug, setShowDebug] = useState(false);
+  // Lazy loading - only preload current and adjacent images
+  const imagesToPreload = useMemo(() => {
+    const currentIndex = availableYears.indexOf(currentYear);
+    const indices = [];
+    // Current image
+    indices.push(currentIndex);
+    // Previous image
+    if (currentIndex > 0) indices.push(currentIndex - 1);
+    // Next image
+    if (currentIndex < availableYears.length - 1) indices.push(currentIndex + 1);
+    
+    return indices.map(i => sampleArtworkPanels[i]?.imageUrl).filter(Boolean);
+  }, [availableYears, currentYear]);
 
-  // Image preloading with progress tracking - memoize to prevent infinite loops
-  const artworkImageUrls = useMemo(() => sampleArtworkPanels.map(panel => panel.imageUrl), []);
   const { 
     preloadedImages, 
     isLoading: imagesLoading 
-  } = useImagePreloader(artworkImageUrls, {
+  } = useImagePreloader(imagesToPreload, {
     preloadOnMount: true,
     maxConcurrent: 3,
-    timeout: 15000
+    timeout: 10000
   });
 
   const preloadStats = usePreloadStats(preloadedImages);
@@ -65,11 +66,6 @@ export default function Home() {
   useEffect(() => {
     setDeviceType(getDeviceType());
     setKiosk(isKioskMode());
-    
-    // Show debug panel in development
-    if (process.env.NODE_ENV === 'development') {
-      setShowDebug(true);
-    }
   }, []);
 
   // Handle comment addition
@@ -100,13 +96,6 @@ export default function Home() {
     // TODO: Show comment details modal
   };
 
-  // Handle filter changes
-  const handleFilterChange = (newFilter: CommentFilter) => {
-    setFilter(newFilter);
-    if (newFilter.year && newFilter.year !== currentYear) {
-      setCurrentYear(newFilter.year);
-    }
-  };
 
   // Handle year navigation
   const handleYearChange = (year: number) => {
@@ -114,8 +103,10 @@ export default function Home() {
     setFilter({ ...filter, year });
   };
 
-  // Show loading screen only during initial image preload
-  const isInitialLoading = imagesLoading && preloadStats.loaded === 0;
+  // Show loading screen only if current image is loading and no images are loaded yet
+  const currentImageUrl = currentPanel.imageUrl;
+  const currentImageStatus = preloadedImages.get(currentImageUrl);
+  const isInitialLoading = !currentImageStatus?.loaded && !currentImageStatus?.error && imagesLoading && preloadStats.loaded === 0;
 
   if (isInitialLoading) {
     return (
@@ -227,8 +218,9 @@ export default function Home() {
             <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToPrevious}>
               <img
                 src={prevPanel.imageUrl}
-                alt={`${prevPanel.title} - ${prevPanel.year}`}
+                alt={`Artwork ${prevPanel.year}`}
                 className="max-h-[80vh] max-w-full object-contain opacity-30 hover:opacity-50 transition-opacity"
+                loading="lazy"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
@@ -290,8 +282,9 @@ export default function Home() {
             <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToNext}>
               <img
                 src={nextPanel.imageUrl}
-                alt={`${nextPanel.title} - ${nextPanel.year}`}
+                alt={`Artwork ${nextPanel.year}`}
                 className="max-h-[80vh] max-w-full object-contain opacity-30 hover:opacity-50 transition-opacity"
+                loading="lazy"
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">

@@ -1,0 +1,12 @@
+{
+  "name": "image-optimization",
+  "version": "1.0.0",
+  "description": "Image optimization tools for the project",
+  "scripts": {
+    "optimize": "node optimize-images.js",
+    "install-deps": "npm install sharp --save-dev"
+  },
+  "devDependencies": {
+    "sharp": "^0.32.0"
+  }
+}
