@@ -89,7 +89,7 @@ export default function CommentOverlay({
               <img 
                 src={comment.imageData} 
                 alt="User drawing" 
-                className="max-w-xs max-h-32 rounded drop-shadow-lg"
+                className="max-w-20 max-h-20 rounded drop-shadow-lg"
               />
             </div>
           )}
