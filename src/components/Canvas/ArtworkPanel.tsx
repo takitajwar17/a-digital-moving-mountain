@@ -10,7 +10,7 @@ import ZoomControls from './ZoomControls';
 interface ArtworkPanelProps {
   panel: ArtworkPanelType;
   comments: Comment[];
-  onCommentAdd: (position: { x: number; y: number }, text: string) => void;
+  onCommentAdd: (position: { x: number; y: number }, text?: string, imageData?: string) => void;
   onCommentClick: (comment: Comment) => void;
   zoomLevel: number;
   onZoomChange: (zoom: number) => void;
@@ -85,7 +85,16 @@ export default function ArtworkPanel({
   // Handle comment submission
   const handleCommentSubmit = (text: string) => {
     if (commentPosition) {
-      onCommentAdd(commentPosition, text);
+      onCommentAdd(commentPosition, text, undefined);
+      setIsAddingComment(false);
+      setCommentPosition(null);
+    }
+  };
+
+  // Handle drawing submission
+  const handleDrawingSubmit = (imageData: string) => {
+    if (commentPosition) {
+      onCommentAdd(commentPosition, undefined, imageData);
       setIsAddingComment(false);
       setCommentPosition(null);
     }
@@ -187,6 +196,7 @@ export default function ArtworkPanel({
               isAddingComment={isAddingComment}
               commentPosition={commentPosition}
               onCommentSubmit={handleCommentSubmit}
+              onDrawingSubmit={handleDrawingSubmit}
               onCommentCancel={handleCommentCancel}
             />
           )}

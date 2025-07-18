@@ -164,6 +164,7 @@ export const sampleComments = [
   {
     id: 'comment-1',
     text: 'This period reminds me of the fear and uncertainty we all felt.',
+    type: 'text' as const,
     language: 'en',
     position: { x: 0.3, y: 0.5 },
     year: 2008,
@@ -179,6 +180,7 @@ export const sampleComments = [
   {
     id: 'comment-2',
     text: '¡Qué época tan difícil! Perdí mi trabajo durante esta crisis.',
+    type: 'text' as const,
     language: 'es',
     position: { x: 0.7, y: 0.3 },
     year: 2008,
@@ -194,6 +196,7 @@ export const sampleComments = [
   {
     id: 'comment-3',
     text: 'The optimism of the new millennium feels so distant now.',
+    type: 'text' as const,
     language: 'en',
     position: { x: 0.2, y: 0.8 },
     year: 2000,
@@ -209,6 +212,7 @@ export const sampleComments = [
   {
     id: 'comment-4',
     text: 'Cette crise a changé ma vision de l économie.',
+    type: 'text' as const,
     language: 'fr',
     position: { x: 0.5, y: 0.4 },
     year: 2009,
@@ -224,6 +228,7 @@ export const sampleComments = [
   {
     id: 'comment-5',
     text: 'Ich erinnere mich an die Panik in den Nachrichten.',
+    type: 'text' as const,
     language: 'de',
     position: { x: 0.8, y: 0.6 },
     year: 2008,

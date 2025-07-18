@@ -63,7 +63,9 @@ export function useComments(filter: CommentFilter = { approved: true }): UseComm
       const newComment: Comment = {
         id: generateId(),
         text: commentInput.text,
-        language: detectLanguage(commentInput.text).language,
+        imageData: commentInput.imageData,
+        type: commentInput.type,
+        language: commentInput.text ? detectLanguage(commentInput.text).language : undefined,
         position: commentInput.position,
         year: commentInput.year,
         timestamp: Date.now(),
@@ -114,7 +116,7 @@ export function useComments(filter: CommentFilter = { approved: true }): UseComm
   // Filter comments based on current filter
   const filteredComments = comments.filter(comment => {
     if (filter.year && comment.year !== filter.year) return false;
-    if (filter.language && comment.language !== filter.language) return false;
+    if (filter.language && comment.language && comment.language !== filter.language) return false;
     if (filter.approved !== undefined && comment.approved !== filter.approved) return false;
     if (filter.dateRange) {
       const { start, end } = filter.dateRange;

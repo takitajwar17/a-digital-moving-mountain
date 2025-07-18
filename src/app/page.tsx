@@ -69,7 +69,7 @@ export default function Home() {
   }, []);
 
   // Handle comment addition
-  const handleCommentAdd = async (position: { x: number; y: number }, text: string) => {
+  const handleCommentAdd = async (position: { x: number; y: number }, text?: string, imageData?: string) => {
     try {
       // Find suitable position to avoid collisions
       const availablePosition = findAvailablePosition(
@@ -80,10 +80,12 @@ export default function Home() {
 
       await addNewComment({
         text,
+        imageData,
+        type: imageData ? 'drawing' : 'text',
         position: availablePosition,
         year: currentYear,
         device: deviceType,
-        inputMethod: deviceType === 'mobile' ? 'touch' : 'keyboard'
+        inputMethod: imageData ? 'stylus' : (deviceType === 'mobile' ? 'touch' : 'keyboard')
       });
     } catch (error) {
       console.error('Failed to add comment:', error);

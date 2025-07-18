@@ -305,16 +305,16 @@ export async function prefetchCriticalResources(): Promise<void> {
       const criticalResources = [
         '/',
         '/admin',
-        '/images/A Moving Mountain %231.jpg',
-        '/images/A Moving Mountain %232.jpg',
-        '/images/A Moving Mountain %233.jpg',
-        '/images/A Moving Mountain %234.jpg',
-        '/images/A Moving Mountain %235.jpg',
-        '/images/A Moving Mountain %236.jpg',
-        '/images/A Moving Mountain %237.jpg',
-        '/images/A Moving Mountain %238.jpg',
-        '/images/A Moving Mountain %239.jpg',
-        '/images/A Moving Mountain %2310.jpg'
+        '/images/optimized/A Moving Mountain %231.jpg',
+        '/images/optimized/A Moving Mountain %232.jpg',
+        '/images/optimized/A Moving Mountain %233.jpg',
+        '/images/optimized/A Moving Mountain %234.jpg',
+        '/images/optimized/A Moving Mountain %235.jpg',
+        '/images/optimized/A Moving Mountain %236.jpg',
+        '/images/optimized/A Moving Mountain %237.jpg',
+        '/images/optimized/A Moving Mountain %238.jpg',
+        '/images/optimized/A Moving Mountain %239.jpg',
+        '/images/optimized/A Moving Mountain %2310.jpg'
       ];
       
       for (const resource of criticalResources) {

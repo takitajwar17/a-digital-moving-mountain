@@ -12,19 +12,18 @@ const STATIC_ASSETS = [
   '/icon-512x512.png',
 ];
 
-// Artwork images to cache with high priority
+// Artwork images to cache with high priority - using optimized versions
 const ARTWORK_IMAGES = [
-  '/images/A Moving Mountain %231.jpg',
-  '/images/A Moving Mountain %232.jpg',
-  '/images/A Moving Mountain %233.jpg',
-  '/images/A Moving Mountain %234.jpg',
-  '/images/A Moving Mountain %235.jpg',
-  '/images/A Moving Mountain %236.jpg',
-  '/images/A Moving Mountain %237.jpg',
-  '/images/A Moving Mountain %238.jpg',
-  '/images/A Moving Mountain %239.jpg',
-  '/images/A Moving Mountain %2310.jpg',
-  '/images/A Moving Mountain Dow Jones°Ø first Decade of the 21st Century.jpg'
+  '/images/optimized/A Moving Mountain %231.jpg',
+  '/images/optimized/A Moving Mountain %232.jpg',
+  '/images/optimized/A Moving Mountain %233.jpg',
+  '/images/optimized/A Moving Mountain %234.jpg',
+  '/images/optimized/A Moving Mountain %235.jpg',
+  '/images/optimized/A Moving Mountain %236.jpg',
+  '/images/optimized/A Moving Mountain %237.jpg',
+  '/images/optimized/A Moving Mountain %238.jpg',
+  '/images/optimized/A Moving Mountain %239.jpg',
+  '/images/optimized/A Moving Mountain %2310.jpg'
 ];
 
 // Install event - cache static assets and artwork images
