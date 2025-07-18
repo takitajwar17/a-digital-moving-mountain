@@ -141,96 +141,107 @@ export default function Home() {
     );
   }
 
-  // Main artwork panel component (right side)
-  const artworkPanelComponent = (
-    <div className="h-screen bg-black" style={{ width: 'auto', flexShrink: 0 }}>
-      <ArtworkPanel
-        panel={currentPanel}
-        comments={panelComments}
-        onCommentAdd={handleCommentAdd}
-        onCommentClick={handleCommentClick}
-        zoomLevel={settings.zoomLevel}
-        onZoomChange={updateZoom}
-        panPosition={settings.panPosition}
-        onPanChange={updatePan}
-        className="h-full"
-      />
-    </div>
-  );
 
-  // Left sidebar with all controls
-  const leftSidebar = (
-    <div className="flex-1 bg-white border-r border-gray-200 flex flex-col h-screen">
-      {/* Year navigation */}
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold mb-3">Years</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {availableYears.map(year => (
-            <button
-              key={year}
-              onClick={() => handleYearChange(year)}
-              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-                year === currentYear
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {year}
-            </button>
-          ))}
+  // Get previous and next panels
+  const currentIndex = availableYears.indexOf(currentYear);
+  const prevYear = currentIndex > 0 ? availableYears[currentIndex - 1] : null;
+  const nextYear = currentIndex < availableYears.length - 1 ? availableYears[currentIndex + 1] : null;
+  const prevPanel = prevYear ? sampleArtworkPanels.find(p => p.year === prevYear) : null;
+  const nextPanel = nextYear ? sampleArtworkPanels.find(p => p.year === nextYear) : null;
+
+  // Navigation handlers
+  const goToPrevious = () => {
+    if (prevYear) handleYearChange(prevYear);
+  };
+  
+  const goToNext = () => {
+    if (nextYear) handleYearChange(nextYear);
+  };
+
+  // New centered layout with side images
+  return (
+    <div className="flex h-screen overflow-hidden bg-black">
+      {/* Left side - Previous image */}
+      <div className="flex-1 flex items-center justify-center relative">
+        {prevPanel && (
+          <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToPrevious}>
+            <img
+              src={prevPanel.imageUrl}
+              alt={`${prevPanel.title} - ${prevPanel.year}`}
+              className="max-h-[80vh] max-w-full object-contain opacity-30 hover:opacity-50 transition-opacity"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
+                ← {prevPanel.year}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Center - Main image */}
+      <div className="flex-shrink-0 flex items-center justify-center relative">
+        <ArtworkPanel
+          panel={currentPanel}
+          comments={panelComments}
+          onCommentAdd={handleCommentAdd}
+          onCommentClick={handleCommentClick}
+          zoomLevel={settings.zoomLevel}
+          onZoomChange={updateZoom}
+          panPosition={settings.panPosition}
+          onPanChange={updatePan}
+          className="h-full"
+        />
+        
+        {/* Overlay controls */}
+        <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded">
+          <h3 className="font-semibold">{currentPanel.title}</h3>
+          <p className="text-sm">{currentPanel.year}</p>
         </div>
-      </div>
-
-      {/* Current panel info */}
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="font-semibold text-lg text-gray-900">{currentPanel.title}</h3>
-        <p className="text-gray-800 mb-2 font-medium">{currentPanel.year}</p>
-        <p className="text-sm text-gray-700">
-          {panelComments.length} comment{panelComments.length !== 1 ? 's' : ''}
-        </p>
-      </div>
-
-      {/* Zoom controls */}
-      <div className="p-4 border-b border-gray-200">
-        <h4 className="font-medium mb-3 text-gray-900">Zoom</h4>
-        <div className="flex items-center gap-2">
+        
+        {/* Zoom controls */}
+        <div className="absolute top-4 right-4 flex gap-2 bg-black bg-opacity-70 p-2 rounded">
           <button
             onClick={() => updateZoom(Math.max(settings.zoomLevel / 1.2, 0.5))}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-gray-900 font-medium"
+            className="w-8 h-8 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded transition-colors text-white"
           >
             −
           </button>
-          <span className="text-sm font-mono min-w-[50px] text-center text-gray-900 font-medium">
+          <span className="text-xs text-white px-2 py-1 flex items-center">
             {Math.round(settings.zoomLevel * 100)}%
           </span>
           <button
             onClick={() => updateZoom(Math.min(settings.zoomLevel * 1.2, 3))}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-gray-900 font-medium"
+            className="w-8 h-8 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded transition-colors text-white"
           >
             +
           </button>
           <button
             onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
-            className="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-sm text-gray-900 font-medium"
+            className="w-8 h-8 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded transition-colors text-white text-xs"
           >
-            Reset
+            ⌂
           </button>
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="p-4 text-sm text-gray-800">
-        <p className="mb-2 font-medium">Click on the image to add a comment</p>
-        <p className="font-medium">Drag to pan, use zoom controls to explore</p>
+      {/* Right side - Next image */}
+      <div className="flex-1 flex items-center justify-center relative">
+        {nextPanel && (
+          <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToNext}>
+            <img
+              src={nextPanel.imageUrl}
+              alt={`${nextPanel.title} - ${nextPanel.year}`}
+              className="max-h-[80vh] max-w-full object-contain opacity-30 hover:opacity-50 transition-opacity"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
+                {nextPanel.year} →
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
-
-  // New split layout for all devices
-  return (
-    <div className="flex h-screen overflow-hidden">
-      {leftSidebar}
-      {artworkPanelComponent}
     </div>
   );
 }
