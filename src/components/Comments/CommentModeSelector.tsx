@@ -17,7 +17,7 @@ export default function CommentModeSelector({
   onCancel,
   className = ''
 }: CommentModeSelectorProps) {
-  const [mode, setMode] = useState<'select' | 'text' | 'drawing'>('select');
+  const [mode, setMode] = useState<'select' | 'text' | 'drawing'>('text');
 
   const handleTextSubmit = (text: string) => {
     onSubmitText(text);
@@ -29,21 +29,75 @@ export default function CommentModeSelector({
 
   if (mode === 'text') {
     return (
-      <CommentInput
-        onSubmit={handleTextSubmit}
-        onCancel={onCancel}
-        className={className}
-      />
+      <div 
+        className={`bg-white rounded-lg shadow-lg p-4 min-w-64 max-w-80 ${className}`}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-black">Add Comment</h3>
+          <button
+            onClick={() => setMode('drawing')}
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            title="Switch to drawing mode"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 14L10 6L14 2L12 4L6 10L2 14Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <CommentInput
+          onSubmit={handleTextSubmit}
+          onCancel={onCancel}
+          className="bg-transparent shadow-none p-0"
+        />
+      </div>
     );
   }
 
   if (mode === 'drawing') {
     return (
-      <DrawingCanvas
-        onSave={handleDrawingSubmit}
-        onCancel={onCancel}
-        className={className}
-      />
+      <div 
+        className={`bg-white rounded-lg shadow-lg p-4 min-w-64 ${className}`}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-black">Draw Comment</h3>
+          <button
+            onClick={() => setMode('text')}
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            title="Switch to text mode"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M2 3.5C2 3.22386 2.22386 3 2.5 3H13.5C13.7761 3 14 3.22386 14 3.5V12.5C14 12.7761 13.7761 13 13.5 13H2.5C2.22386 13 2 12.7761 2 12.5V3.5Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M5 6H11M5 8H9"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <DrawingCanvas
+          onSave={handleDrawingSubmit}
+          onCancel={onCancel}
+          className="bg-transparent shadow-none p-0"
+        />
+      </div>
     );
   }
 

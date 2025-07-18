@@ -15,6 +15,40 @@ interface CommentOverlayProps {
   onCommentCancel: () => void;
 }
 
+// Smart positioning to avoid edge cutoffs
+function getModalTransform(
+  position: { x: number; y: number },
+  panelDimensions: { width: number; height: number }
+): string {
+  const modalWidth = 320; // approximate modal width
+  const modalHeight = 200; // approximate modal height
+  
+  let transformX = '-50%';
+  let transformY = '-50%';
+  
+  // Check if modal would go off the right edge
+  if (position.x * panelDimensions.width + modalWidth / 2 > panelDimensions.width) {
+    transformX = '-100%';
+  }
+  
+  // Check if modal would go off the left edge
+  if (position.x * panelDimensions.width - modalWidth / 2 < 0) {
+    transformX = '0%';
+  }
+  
+  // Check if modal would go off the bottom edge
+  if (position.y * panelDimensions.height + modalHeight / 2 > panelDimensions.height) {
+    transformY = '-100%';
+  }
+  
+  // Check if modal would go off the top edge
+  if (position.y * panelDimensions.height - modalHeight / 2 < 0) {
+    transformY = '0%';
+  }
+  
+  return `translate(${transformX}, ${transformY})`;
+}
+
 export default function CommentOverlay({
   comments,
   onCommentClick,
@@ -65,11 +99,11 @@ export default function CommentOverlay({
       {/* New Comment Input */}
       {isAddingComment && commentPosition && (
         <div
-          className="absolute pointer-events-auto"
+          className="absolute pointer-events-auto z-50"
           style={{
             left: `${commentPosition.x * panelDimensions.width}px`,
             top: `${commentPosition.y * panelDimensions.height}px`,
-            transform: 'translate(-50%, -50%)'
+            transform: getModalTransform(commentPosition, panelDimensions)
           }}
         >
           <CommentModeSelector

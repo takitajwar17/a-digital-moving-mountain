@@ -28,14 +28,16 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#000000';
+    ctx.strokeStyle = '#FFFFFF';
 
-    // Fill with white background
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Fill with transparent background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
@@ -60,6 +62,9 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
 
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -71,7 +76,6 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     if ('touches' in e) {
       x = e.touches[0].clientX - rect.left;
       y = e.touches[0].clientY - rect.top;
-      e.preventDefault(); // Prevent scrolling on touch
     } else {
       x = e.clientX - rect.left;
       y = e.clientY - rect.top;
@@ -81,7 +85,9 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     ctx.stroke();
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDrawing(false);
   };
 
@@ -90,8 +96,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasDrawn(false);
   };
 
@@ -113,7 +118,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
       <canvas
         ref={canvasRef}
-        className="border border-gray-300 rounded cursor-crosshair touch-none"
+        className="border border-gray-300 rounded cursor-crosshair touch-none bg-transparent"
         style={{ touchAction: 'none' }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
@@ -127,7 +132,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
       <div className="flex justify-between items-center mt-3">
         <button
           onClick={clearCanvas}
-          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          className="px-3 py-1 text-sm text-black hover:text-gray-700 transition-colors"
         >
           Clear
         </button>
@@ -135,7 +140,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         <div className="flex gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            className="px-3 py-1 text-sm text-black hover:text-gray-700 transition-colors"
           >
             Cancel
           </button>

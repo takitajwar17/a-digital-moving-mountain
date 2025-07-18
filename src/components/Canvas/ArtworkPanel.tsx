@@ -47,6 +47,13 @@ export default function ArtworkPanel({
   const handleCanvasClick = (event: React.MouseEvent) => {
     if (isDragging) return;
 
+    // If already adding a comment, clicking outside should cancel it
+    if (isAddingComment) {
+      setIsAddingComment(false);
+      setCommentPosition(null);
+      return;
+    }
+
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -65,12 +72,15 @@ export default function ArtworkPanel({
 
   // Handle drag to pan
   const handleMouseDown = (event: React.MouseEvent) => {
+    // Don't start dragging if we're adding a comment
+    if (isAddingComment) return;
+    
     setIsDragging(true);
     setDragStart({ x: event.clientX - panPosition.x, y: event.clientY - panPosition.y });
   };
 
   const handleMouseMove = (event: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || isAddingComment) return;
 
     const newX = event.clientX - dragStart.x;
     const newY = event.clientY - dragStart.y;

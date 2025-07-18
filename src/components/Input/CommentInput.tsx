@@ -53,7 +53,12 @@ export default function CommentInput({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-4 min-w-64 max-w-80 ${className}`}>
+    <div 
+      className={`bg-white rounded-lg shadow-lg p-4 min-w-64 max-w-80 ${className}`}
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+    >
       <form onSubmit={handleSubmit}>
         <textarea
           ref={textareaRef}
@@ -63,11 +68,14 @@ export default function CommentInput({
           placeholder={placeholder}
           maxLength={maxLength}
           rows={3}
-          className="w-full resize-none border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full resize-none border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
         />
         
         <div className="flex justify-between items-center mt-3">
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-black">
             {text.length}/{maxLength}
           </span>
           
@@ -75,7 +83,7 @@ export default function CommentInput({
             <button
               type="button"
               onClick={onCancel}
-              className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              className="px-3 py-1 text-sm text-black hover:text-gray-700 transition-colors"
             >
               Cancel
             </button>
