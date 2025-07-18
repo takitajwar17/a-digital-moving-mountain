@@ -22,10 +22,10 @@ export default function ZoomControls({
   };
 
   return (
-    <div className={`flex flex-col gap-2 bg-white bg-opacity-90 p-2 rounded-lg shadow-md ${className}`}>
+    <div className={`flex flex-col gap-1 bg-black bg-opacity-70 p-2 rounded ${className}`}>
       <button
         onClick={handleZoomIn}
-        className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+        className="w-8 h-8 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded transition-colors text-white"
         title="Zoom In"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -33,13 +33,13 @@ export default function ZoomControls({
         </svg>
       </button>
 
-      <div className="text-xs text-center text-gray-600 px-1">
+      <div className="text-xs text-center text-white px-1">
         {Math.round(zoomLevel * 100)}%
       </div>
 
       <button
         onClick={handleZoomOut}
-        className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+        className="w-8 h-8 flex items-center justify-center bg-white bg-opacity-20 hover:bg-opacity-30 rounded transition-colors text-white"
         title="Zoom Out"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

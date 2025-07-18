@@ -156,64 +156,22 @@ export default function Home() {
     />
   );
 
-  // Year navigation with loading indicator
+  // Simplified year navigation
   const yearNavigation = (
-    <div className="flex items-center gap-2 p-4 bg-white border-b border-gray-200 overflow-x-auto">
-      {availableYears.map(year => {
-        const panelImage = sampleArtworkPanels.find(p => p.year === year);
-        const isImageReady = panelImage && preloadedImages.get(panelImage.imageUrl)?.loaded;
-        
-        return (
-          <button
-            key={year}
-            onClick={() => handleYearChange(year)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap relative ${
-              year === currentYear
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {year}
-            {/* Image loading indicator */}
-            {!isImageReady && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-            )}
-          </button>
-        );
-      })}
-      
-      {/* Subtle loading indicator for comments */}
-      {commentsLoading && (
-        <div className="ml-4 flex items-center text-gray-500">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-xs">Loading comments...</span>
-        </div>
-      )}
-      
-      {/* Image preload status */}
-      {imagesLoading && (
-        <div className="ml-4 flex items-center text-gray-500">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
-          <span className="ml-2 text-xs">
-            Loading images... {preloadStats.loaded}/{preloadStats.total}
-          </span>
-        </div>
-      )}
-      
-      {/* Debug panel */}
-      {showDebug && (
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs text-gray-500">
-            💬 {comments.length} comments stored
-          </span>
-          <button
-            onClick={clearComments}
-            className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200 transition-colors"
-          >
-            Clear All
-          </button>
-        </div>
-      )}
+    <div className="flex items-center gap-2 p-2 bg-white border-b border-gray-200 overflow-x-auto">
+      {availableYears.map(year => (
+        <button
+          key={year}
+          onClick={() => handleYearChange(year)}
+          className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+            year === currentYear
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {year}
+        </button>
+      ))}
     </div>
   );
 

@@ -114,7 +114,7 @@ export default function ArtworkPanel({
   const shouldShowLoading = !imageLoaded && !imageError;
 
   return (
-    <div className={`relative overflow-hidden bg-gray-100 ${className}`}>
+    <div className={`relative overflow-hidden bg-black ${className}`}>
       {/* Zoom Controls */}
       <ZoomControls
         zoomLevel={zoomLevel}
@@ -159,44 +159,29 @@ export default function ArtworkPanel({
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{
-              maxWidth: '100%',
-              height: 'auto',
+              width: '100%',
+              height: '100vh',
+              objectFit: 'contain',
             }}
           />
 
-          {/* Loading overlay - only show if image is not loaded and not errored */}
+          {/* Minimal loading state */}
           {shouldShowLoading && (
-            <div 
-              className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse flex items-center justify-center"
-              style={{
-                width: panel.dimensions.width,
-                height: panel.dimensions.height,
-              }}
-            >
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-600">Loading {panel.year}...</p>
-              </div>
+            <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           )}
 
-          {/* Error state */}
+          {/* Minimal error state */}
           {imageError && (
-            <div 
-              className="absolute inset-0 bg-red-50 flex items-center justify-center border-2 border-red-200 border-dashed"
-              style={{
-                width: panel.dimensions.width,
-                height: panel.dimensions.height,
-              }}
-            >
-              <div className="text-center text-red-600">
+            <div className="absolute inset-0 bg-red-50 flex items-center justify-center">
+              <div className="text-red-600 text-center">
                 <div className="w-8 h-8 mx-auto mb-2">
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 16.5c-.77.833.192 2.5 1.732 2.5z" />
                   </svg>
                 </div>
-                <p className="text-sm">Failed to load image</p>
-                <p className="text-xs mt-1">{panel.year}</p>
+                <p className="text-sm">Error loading image</p>
               </div>
             </div>
           )}
@@ -216,19 +201,9 @@ export default function ArtworkPanel({
         </div>
       </div>
 
-      {/* Panel Info */}
-      <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-2 rounded backdrop-blur-sm">
-        <h3 className="font-semibold">{panel.title}</h3>
-        <p className="text-sm">{panel.year}</p>
-        <p className="text-xs">
-          {comments.length} comment{comments.length !== 1 ? 's' : ''}
-          {!imageLoaded && !imageError && (
-            <span className="ml-2 text-yellow-300">⏳</span>
-          )}
-          {imageError && (
-            <span className="ml-2 text-red-300">⚠️</span>
-          )}
-        </p>
+      {/* Minimal panel info */}
+      <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
+        {panel.year}
       </div>
     </div>
   );
