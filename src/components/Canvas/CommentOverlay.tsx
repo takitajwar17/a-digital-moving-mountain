@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Comment } from '@/types/comment';
 import CommentModeSelector from '../Comments/CommentModeSelector';
-import InkRenderer from './InkRenderer';
 
 interface CommentOverlayProps {
   comments: Comment[];
@@ -26,7 +25,7 @@ export default function CommentOverlay({
   onDrawingSubmit,
   onCommentCancel
 }: CommentOverlayProps) {
-  const [hoveredComment, setHoveredComment] = useState<string | null>(null);
+  const [, ] = useState<string | null>(null);
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -77,7 +76,6 @@ export default function CommentOverlay({
             onSubmitText={onCommentSubmit}
             onSubmitDrawing={onDrawingSubmit}
             onCancel={onCommentCancel}
-            position={commentPosition}
           />
         </div>
       )}

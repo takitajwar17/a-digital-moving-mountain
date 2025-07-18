@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { ArtworkPanel as ArtworkPanelType } from '@/types/artwork';
 import { Comment } from '@/types/comment';
 import CommentOverlay from './CommentOverlay';
-import ZoomControls from './ZoomControls';
 
 interface ArtworkPanelProps {
   panel: ArtworkPanelType;
@@ -13,7 +12,7 @@ interface ArtworkPanelProps {
   onCommentAdd: (position: { x: number; y: number }, text?: string, imageData?: string) => void;
   onCommentClick: (comment: Comment) => void;
   zoomLevel: number;
-  onZoomChange: (zoom: number) => void;
+  onZoomChange?: (zoom: number) => void;
   panPosition: { x: number; y: number };
   onPanChange: (position: { x: number; y: number }) => void;
   className?: string;

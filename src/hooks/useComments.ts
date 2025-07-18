@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Comment, CommentInput, CommentFilter } from '@/types/comment';
-import { detectLanguage } from '@/utils/languageDetection';
+import { 
+  addComment, 
+  getCommentsByYear, 
+  subscribeToCommentsByYear,
+  getAllComments,
+  subscribeToAllComments
+} from '@/services/firebaseComments';
 
 export interface UseCommentsReturn {
   comments: Comment[];
@@ -14,73 +20,65 @@ export interface UseCommentsReturn {
   filteredComments: Comment[];
 }
 
-// Simple local storage key for comments
-const STORAGE_KEY = 'footprints-comments';
-
-// Generate a simple ID
-const generateId = () => `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-// Generate a simple session ID
-const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
 export function useComments(filter: CommentFilter = { approved: true }): UseCommentsReturn {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load comments from localStorage on mount
+  // Load comments from Firebase on mount and subscribe to real-time updates
   useEffect(() => {
-    try {
-      setLoading(true);
-      const savedComments = localStorage.getItem(STORAGE_KEY);
-      if (savedComments) {
-        const parsed = JSON.parse(savedComments) as Comment[];
-        setComments(parsed);
+    let unsubscribe: (() => void) | undefined;
+    
+    const loadComments = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        if (filter.year) {
+          // Subscribe to comments for specific year
+          console.log('🔄 Subscribing to comments for year:', filter.year);
+          unsubscribe = subscribeToCommentsByYear(filter.year, (comments) => {
+            console.log('🔄 useComments received comments:', comments);
+            setComments(comments);
+            setLoading(false);
+          });
+        } else {
+          // Subscribe to all comments (for admin use)
+          console.log('🔄 Subscribing to all comments');
+          unsubscribe = subscribeToAllComments((comments) => {
+            console.log('🔄 useComments received all comments:', comments);
+            setComments(comments);
+            setLoading(false);
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load comments from Firebase:', error);
+        setError('Failed to load comments');
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to load comments from localStorage:', error);
-      setError('Failed to load comments');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    };
+    
+    loadComments();
+    
+    // Cleanup subscription on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [filter.year]);
 
-  // Save comments to localStorage whenever comments change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
-    } catch (error) {
-      console.error('Failed to save comments to localStorage:', error);
-    }
-  }, [comments]);
-
-  // Add new comment
+  // Add new comment to Firebase
   const addNewComment = useCallback(async (commentInput: CommentInput) => {
     try {
       setLoading(true);
       setError(null);
 
-      const newComment: Comment = {
-        id: generateId(),
-        text: commentInput.text,
-        imageData: commentInput.imageData,
-        type: commentInput.type,
-        language: commentInput.text ? detectLanguage(commentInput.text).language : undefined,
-        position: commentInput.position,
-        year: commentInput.year,
-        timestamp: Date.now(),
-        userId: 'anonymous-user',
-        approved: true, // Auto-approve all comments for simplicity
-        metadata: {
-          device: commentInput.device,
-          inputMethod: commentInput.inputMethod,
-          sessionId: generateSessionId(),
-          userAgent: navigator.userAgent
-        }
-      };
-
-      setComments(prev => [...prev, newComment]);
-      console.log('✅ Comment added:', newComment);
+      const newComment = await addComment(commentInput);
+      console.log('✅ Comment added to Firebase:', newComment);
+      
+      // The real-time listener will automatically update the state
+      // so we don't need to manually update the comments array
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to add comment');
       throw error;
@@ -89,28 +87,28 @@ export function useComments(filter: CommentFilter = { approved: true }): UseComm
     }
   }, []);
 
-  // Refresh comments manually (for compatibility, but not needed with localStorage)
+  // Refresh comments manually (fetch from Firebase)
   const refreshComments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const savedComments = localStorage.getItem(STORAGE_KEY);
-      if (savedComments) {
-        const parsed = JSON.parse(savedComments) as Comment[];
-        setComments(parsed);
-      }
+      
+      const comments = filter.year 
+        ? await getCommentsByYear(filter.year)
+        : await getAllComments();
+        
+      setComments(comments);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to refresh comments');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filter.year]);
 
-  // Clear all comments (for development)
+  // Clear all comments (for development - only clears local state)
   const clearComments = useCallback(() => {
     setComments([]);
-    localStorage.removeItem(STORAGE_KEY);
-    console.log('🗑️ All comments cleared');
+    console.log('🗑️ Local comments cleared (Firebase data remains)');
   }, []);
 
   // Filter comments based on current filter

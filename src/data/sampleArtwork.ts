@@ -159,89 +159,7 @@ export const movingMountainCollection: ArtworkCollection = {
   }
 };
 
-// Sample comments for demonstration
-export const sampleComments = [
-  {
-    id: 'comment-1',
-    text: 'This period reminds me of the fear and uncertainty we all felt.',
-    type: 'text' as const,
-    language: 'en',
-    position: { x: 0.3, y: 0.5 },
-    year: 2008,
-    timestamp: Date.now() - 86400000, // 1 day ago
-    userId: 'user-1',
-    approved: true,
-    metadata: {
-      device: 'mobile' as const,
-      inputMethod: 'touch' as const,
-      sessionId: 'session-1'
-    }
-  },
-  {
-    id: 'comment-2',
-    text: '¡Qué época tan difícil! Perdí mi trabajo durante esta crisis.',
-    type: 'text' as const,
-    language: 'es',
-    position: { x: 0.7, y: 0.3 },
-    year: 2008,
-    timestamp: Date.now() - 172800000, // 2 days ago
-    userId: 'user-2',
-    approved: true,
-    metadata: {
-      device: 'tablet' as const,
-      inputMethod: 'stylus' as const,
-      sessionId: 'session-2'
-    }
-  },
-  {
-    id: 'comment-3',
-    text: 'The optimism of the new millennium feels so distant now.',
-    type: 'text' as const,
-    language: 'en',
-    position: { x: 0.2, y: 0.8 },
-    year: 2000,
-    timestamp: Date.now() - 259200000, // 3 days ago
-    userId: 'user-3',
-    approved: true,
-    metadata: {
-      device: 'desktop' as const,
-      inputMethod: 'keyboard' as const,
-      sessionId: 'session-3'
-    }
-  },
-  {
-    id: 'comment-4',
-    text: 'Cette crise a changé ma vision de l économie.',
-    type: 'text' as const,
-    language: 'fr',
-    position: { x: 0.5, y: 0.4 },
-    year: 2009,
-    timestamp: Date.now() - 345600000, // 4 days ago
-    userId: 'user-4',
-    approved: true,
-    metadata: {
-      device: 'mobile' as const,
-      inputMethod: 'touch' as const,
-      sessionId: 'session-4'
-    }
-  },
-  {
-    id: 'comment-5',
-    text: 'Ich erinnere mich an die Panik in den Nachrichten.',
-    type: 'text' as const,
-    language: 'de',
-    position: { x: 0.8, y: 0.6 },
-    year: 2008,
-    timestamp: Date.now() - 432000000, // 5 days ago
-    userId: 'user-5',
-    approved: true,
-    metadata: {
-      device: 'tablet' as const,
-      inputMethod: 'stylus' as const,
-      sessionId: 'session-5'
-    }
-  }
-];
+// Sample comments removed - now using Firebase
 
 // Placeholder images (to be replaced with actual artwork)
 export const placeholderImages = {
@@ -261,8 +179,7 @@ export function getAvailableYears(): number[] {
   return sampleArtworkPanels.map(panel => panel.year).sort();
 }
 
-// Function to get unique languages from comments
+// Function to get available languages (hardcoded for now)
 export function getAvailableLanguages(): string[] {
-  const languages = new Set(sampleComments.map(comment => comment.language));
-  return Array.from(languages).sort();
+  return ['en', 'es', 'fr', 'de', 'it', 'pt', 'zh', 'ja', 'ko', 'ar', 'hi'].sort();
 }

@@ -14,13 +14,16 @@ import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
 // Sample data
 import { 
   sampleArtworkPanels, 
-  sampleComments, 
   getAvailableYears
 } from '@/data/sampleArtwork';
 
 export default function Home() {
-  const [filter, setFilter] = useState<CommentFilter>({ approved: true });
-  const { comments, addNewComment } = useComments(filter);
+  const [filter] = useState<CommentFilter>({ approved: true });
+  const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
+  
+  // Update filter when year changes
+  const yearFilter = { ...filter, year: currentYear };
+  const { comments, addNewComment } = useComments(yearFilter);
   const { settings, updateZoom, updatePan } = useCanvas();
   
   // Device and layout detection
@@ -28,11 +31,10 @@ export default function Home() {
   const [, setKiosk] = useState(false);
   
   // Current artwork panel
-  const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
   const currentPanel = sampleArtworkPanels.find(panel => panel.year === currentYear) || sampleArtworkPanels[0];
   
-  // Comments for current panel
-  const panelComments = [...sampleComments.filter(comment => comment.year === currentYear), ...comments];
+  // Comments for current panel (now only from Firebase)
+  const panelComments = comments;
   
   // Available data for filters
   const availableYears = getAvailableYears();
@@ -102,7 +104,6 @@ export default function Home() {
   // Handle year navigation
   const handleYearChange = (year: number) => {
     setCurrentYear(year);
-    setFilter({ ...filter, year });
   };
 
   // Show loading screen only if current image is loading and no images are loaded yet

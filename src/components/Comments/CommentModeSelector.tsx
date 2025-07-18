@@ -8,7 +8,6 @@ interface CommentModeSelectorProps {
   onSubmitText: (text: string) => void;
   onSubmitDrawing: (imageData: string) => void;
   onCancel: () => void;
-  position: { x: number; y: number };
   className?: string;
 }
 
@@ -16,7 +15,6 @@ export default function CommentModeSelector({
   onSubmitText,
   onSubmitDrawing,
   onCancel,
-  position,
   className = ''
 }: CommentModeSelectorProps) {
   const [mode, setMode] = useState<'select' | 'text' | 'drawing'>('select');
