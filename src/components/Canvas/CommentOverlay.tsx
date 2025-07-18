@@ -42,20 +42,20 @@ export default function CommentOverlay({
         >
           {comment.type === 'text' ? (
             <div 
-              className="bg-white bg-opacity-90 px-3 py-2 rounded-lg shadow-md cursor-pointer hover:bg-opacity-100 transition-all max-w-xs"
+              className="bg-transparent px-3 py-2 cursor-pointer transition-all max-w-xs"
               onClick={() => onCommentClick(comment)}
             >
-              <p className="text-sm text-gray-800 leading-relaxed">{comment.text}</p>
+              <p className="text-sm text-white leading-relaxed font-medium drop-shadow-lg">{comment.text}</p>
             </div>
           ) : (
             <div 
-              className="bg-white bg-opacity-90 p-1 rounded-lg shadow-md cursor-pointer hover:bg-opacity-100 transition-all"
+              className="bg-transparent p-1 cursor-pointer transition-all"
               onClick={() => onCommentClick(comment)}
             >
               <img 
                 src={comment.imageData} 
                 alt="User drawing" 
-                className="max-w-xs max-h-32 rounded"
+                className="max-w-xs max-h-32 rounded drop-shadow-lg"
               />
             </div>
           )}
