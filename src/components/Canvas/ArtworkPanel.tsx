@@ -115,21 +115,11 @@ export default function ArtworkPanel({
 
   return (
     <div className={`relative overflow-hidden bg-black ${className}`}>
-      {/* Zoom Controls */}
-      <ZoomControls
-        zoomLevel={zoomLevel}
-        onZoomChange={onZoomChange}
-        onReset={() => {
-          onZoomChange(1);
-          onPanChange({ x: 0, y: 0 });
-        }}
-        className="absolute top-4 right-4 z-10"
-      />
 
       {/* Canvas Container */}
       <div
         ref={canvasRef}
-        className="relative w-full h-full cursor-grab active:cursor-grabbing"
+        className="relative w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center"
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -138,10 +128,10 @@ export default function ArtworkPanel({
       >
         {/* Artwork Image */}
         <div
-          className="absolute"
+          className="relative"
           style={{
             transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomLevel})`,
-            transformOrigin: '0 0'
+            transformOrigin: 'center center'
           }}
         >
           <Image
@@ -159,8 +149,9 @@ export default function ArtworkPanel({
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             style={{
-              width: '100%',
+              maxWidth: 'none',
               height: '100vh',
+              width: 'auto',
               objectFit: 'contain',
             }}
           />
@@ -201,10 +192,6 @@ export default function ArtworkPanel({
         </div>
       </div>
 
-      {/* Minimal panel info */}
-      <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-        {panel.year}
-      </div>
     </div>
   );
 }

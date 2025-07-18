@@ -141,81 +141,96 @@ export default function Home() {
     );
   }
 
-  // Main artwork panel component
+  // Main artwork panel component (right side)
   const artworkPanelComponent = (
-    <ArtworkPanel
-      panel={currentPanel}
-      comments={panelComments}
-      onCommentAdd={handleCommentAdd}
-      onCommentClick={handleCommentClick}
-      zoomLevel={settings.zoomLevel}
-      onZoomChange={updateZoom}
-      panPosition={settings.panPosition}
-      onPanChange={updatePan}
-      className="w-full h-full"
-    />
-  );
-
-  // Simplified year navigation
-  const yearNavigation = (
-    <div className="flex items-center gap-2 p-2 bg-white border-b border-gray-200 overflow-x-auto">
-      {availableYears.map(year => (
-        <button
-          key={year}
-          onClick={() => handleYearChange(year)}
-          className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-            year === currentYear
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {year}
-        </button>
-      ))}
+    <div className="flex-1 h-screen bg-black">
+      <ArtworkPanel
+        panel={currentPanel}
+        comments={panelComments}
+        onCommentAdd={handleCommentAdd}
+        onCommentClick={handleCommentClick}
+        zoomLevel={settings.zoomLevel}
+        onZoomChange={updateZoom}
+        panPosition={settings.panPosition}
+        onPanChange={updatePan}
+        className="w-full h-full"
+      />
     </div>
   );
 
-  // Render appropriate layout based on device type
-  if (deviceType === 'mobile') {
-    return (
-      <MobileLayout
-        filter={filter}
-        onFilterChange={handleFilterChange}
-        availableYears={availableYears}
-        availableLanguages={availableLanguages}
-      >
-        {yearNavigation}
-        {artworkPanelComponent}
-      </MobileLayout>
-    );
-  }
+  // Left sidebar with all controls
+  const leftSidebar = (
+    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-screen">
+      {/* Year navigation */}
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold mb-3">Years</h2>
+        <div className="grid grid-cols-3 gap-2">
+          {availableYears.map(year => (
+            <button
+              key={year}
+              onClick={() => handleYearChange(year)}
+              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                year === currentYear
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {year}
+            </button>
+          ))}
+        </div>
+      </div>
 
-  if (deviceType === 'tablet') {
-    return (
-      <TabletLayout
-        filter={filter}
-        onFilterChange={handleFilterChange}
-        availableYears={availableYears}
-        availableLanguages={availableLanguages}
-        isKioskMode={kiosk}
-      >
-        {yearNavigation}
-        {artworkPanelComponent}
-      </TabletLayout>
-    );
-  }
+      {/* Current panel info */}
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="font-semibold text-lg">{currentPanel.title}</h3>
+        <p className="text-gray-600 mb-2">{currentPanel.year}</p>
+        <p className="text-sm text-gray-500">
+          {panelComments.length} comment{panelComments.length !== 1 ? 's' : ''}
+        </p>
+      </div>
 
-  // Desktop layout
+      {/* Zoom controls */}
+      <div className="p-4 border-b border-gray-200">
+        <h4 className="font-medium mb-3">Zoom</h4>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => updateZoom(Math.max(settings.zoomLevel / 1.2, 0.5))}
+            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          >
+            −
+          </button>
+          <span className="text-sm font-mono min-w-[50px] text-center">
+            {Math.round(settings.zoomLevel * 100)}%
+          </span>
+          <button
+            onClick={() => updateZoom(Math.min(settings.zoomLevel * 1.2, 3))}
+            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          >
+            +
+          </button>
+          <button
+            onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
+            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition-colors text-sm"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <div className="p-4 text-sm text-gray-600">
+        <p className="mb-2">Click on the image to add a comment</p>
+        <p>Drag to pan, use zoom controls to explore</p>
+      </div>
+    </div>
+  );
+
+  // New split layout for all devices
   return (
-    <DesktopLayout
-      filter={filter}
-      onFilterChange={handleFilterChange}
-      availableYears={availableYears}
-      availableLanguages={availableLanguages}
-      totalComments={panelComments.length}
-    >
-      {yearNavigation}
+    <div className="flex h-screen overflow-hidden">
+      {leftSidebar}
       {artworkPanelComponent}
-    </DesktopLayout>
+    </div>
   );
 }
