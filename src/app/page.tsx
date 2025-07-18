@@ -198,7 +198,7 @@ export default function Home() {
               onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
               className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors text-xs font-bold"
             >
-              ⌂
+              ↺
             </button>
           </div>
         </div>
@@ -295,7 +295,7 @@ export default function Home() {
               onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
               className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors text-xs font-bold"
             >
-              ⌂
+              ↺
             </button>
           </div>
         </div>
