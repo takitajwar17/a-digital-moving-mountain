@@ -22,6 +22,9 @@ const COLLECTION_NAME = 'comments';
 // Convert Firestore document to Comment type
 function convertFirestoreDoc(doc: DocumentSnapshot<DocumentData>): Comment {
   const data = doc.data();
+  if (!data) {
+    throw new Error('Document data is undefined');
+  }
   return {
     id: doc.id,
     text: data.text,

@@ -23,8 +23,8 @@ export default function InkRenderer({
   const [isVisible, setIsVisible] = useState(false);
   const [animationProgress, setAnimationProgress] = useState(0);
 
-  const direction = getLanguageDirection(comment.language);
-  const script = getLanguageScript(comment.language);
+  const direction = getLanguageDirection(comment.language || 'en');
+  const script = getLanguageScript(comment.language || 'en');
 
   // Calculate position and size
   const x = comment.position.x * panelDimensions.width;
@@ -211,7 +211,7 @@ export default function InkRenderer({
 
         {/* Ink brush strokes */}
         <path
-          d={generateInkPath(comment.text, maxWidth - 20)}
+          d={generateInkPath(comment.text || '', maxWidth - 20)}
           stroke={inkStyle.color}
           strokeWidth={inkStyle.strokeWidth}
           fill="none"

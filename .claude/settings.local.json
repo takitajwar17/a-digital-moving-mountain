@@ -9,7 +9,8 @@
       "Bash(npx next lint:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(timeout 10 npm run dev)"
     ],
     "deny": []
   }
