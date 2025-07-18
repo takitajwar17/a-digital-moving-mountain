@@ -79,7 +79,7 @@ export default function CommentOverlay({
               className="bg-transparent px-3 py-2 cursor-pointer transition-all max-w-xs"
               onClick={() => onCommentClick(comment)}
             >
-              <p className="text-sm text-white leading-relaxed font-medium drop-shadow-lg">{comment.text}</p>
+              <p className="text-sm text-black leading-relaxed font-medium drop-shadow-lg">{comment.text}</p>
             </div>
           ) : (
             <div 

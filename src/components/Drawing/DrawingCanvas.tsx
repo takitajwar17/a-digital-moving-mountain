@@ -28,7 +28,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#FFFFFF';
+    ctx.strokeStyle = '#000000';
 
     // Fill with transparent background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
