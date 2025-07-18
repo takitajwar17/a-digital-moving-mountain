@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useComments } from '@/hooks/useComments';
 import { useCanvas } from '@/hooks/useCanvas';
 import { useImagePreloader, usePreloadStats } from '@/hooks/useImagePreloader';
-import { CommentFilter } from '@/types/comment';
+import { Comment, CommentFilter } from '@/types/comment';
 import { getDeviceType, isKioskMode } from '@/utils/deviceDetection';
 import { findAvailablePosition } from '@/utils/coordinateSystem';
 
@@ -95,7 +95,7 @@ export default function Home() {
   };
 
   // Handle comment click
-  const handleCommentClick = (comment: { id: string; text: string; position: { x: number; y: number }; year: number; timestamp: number }) => {
+  const handleCommentClick = (comment: Comment) => {
     console.log('Comment clicked:', comment);
     // TODO: Show comment details modal
   };
