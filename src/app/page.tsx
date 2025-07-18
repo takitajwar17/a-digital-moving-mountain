@@ -119,24 +119,8 @@ export default function Home() {
 
   if (isInitialLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-md">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading Footprints Across the Ocean&hellip;</p>
-          
-          {/* Progress indicator for image preloading */}
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${preloadStats.progress}%` }}
-              ></div>
-            </div>
-            <p className="mt-2 text-sm text-gray-500">
-              Loading artwork images... {preloadStats.loaded}/{preloadStats.total}
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
     );
   }
