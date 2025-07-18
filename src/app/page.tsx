@@ -143,7 +143,7 @@ export default function Home() {
 
   // Main artwork panel component (right side)
   const artworkPanelComponent = (
-    <div className="flex-1 h-screen bg-black">
+    <div className="h-screen bg-black" style={{ width: 'auto', flexShrink: 0 }}>
       <ArtworkPanel
         panel={currentPanel}
         comments={panelComments}
@@ -153,14 +153,14 @@ export default function Home() {
         onZoomChange={updateZoom}
         panPosition={settings.panPosition}
         onPanChange={updatePan}
-        className="w-full h-full"
+        className="h-full"
       />
     </div>
   );
 
   // Left sidebar with all controls
   const leftSidebar = (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-screen">
+    <div className="flex-1 bg-white border-r border-gray-200 flex flex-col h-screen">
       {/* Year navigation */}
       <div className="p-4 border-b border-gray-200">
         <h2 className="text-lg font-semibold mb-3">Years</h2>

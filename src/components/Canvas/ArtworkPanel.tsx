@@ -114,17 +114,18 @@ export default function ArtworkPanel({
   const shouldShowLoading = !imageLoaded && !imageError;
 
   return (
-    <div className={`relative overflow-hidden bg-black ${className}`}>
+    <div className={`relative overflow-hidden bg-black ${className}`} style={{ width: 'fit-content' }}>
 
       {/* Canvas Container */}
       <div
         ref={canvasRef}
-        className="relative w-full h-full cursor-grab active:cursor-grabbing flex items-center justify-center"
+        className="relative h-full cursor-grab active:cursor-grabbing flex items-center justify-center"
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        style={{ width: 'fit-content' }}
       >
         {/* Artwork Image */}
         <div
