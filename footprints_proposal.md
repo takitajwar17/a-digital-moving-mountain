@@ -47,6 +47,7 @@ By the end of the 6 weeks, this project will produce:
 | **Week 6** | Final polish; present working website with real comments; prepare final writeup and visuals for Schmucker Gallery team |
 
 
+
 ## Why This Matters
 
 This project preserves and extends the original purpose of A Moving Mountain—inviting the public to collaborate, reflect, and be part of the art. The digital version not only makes the experience accessible to more people but also ensures that the community's voices are recorded, shared, and remembered.
