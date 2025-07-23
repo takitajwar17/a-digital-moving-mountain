@@ -1,6 +1,6 @@
 {
-  "name": "Footprints Across the Ocean",
-  "short_name": "Footprints",
+  "name": "A Digital Moving Mountain",
+  "short_name": "Digital Mountain",
   "description": "Interactive digital canvas based on 'A Moving Mountain' by Dr. Gan Yu",
   "start_url": "/",
   "display": "standalone",

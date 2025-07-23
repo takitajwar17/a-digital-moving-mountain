@@ -1,10 +1,10 @@
-# Footprints Across the Ocean
+# A Digital Moving Mountain
 
 A digital interactive art platform that transforms Dr. Gan Yu's "A Moving Mountain" painting into a collaborative digital experience. This project extends the original 20-foot-long ink painting depicting the Dow Jones performance from 2000-2009 into an interactive web application where visitors can contribute messages that appear as digital ink notes on the virtual canvas.
 
 ## Project Overview
 
-**Footprints Across the Ocean** is based on "A Moving Mountain – Dow Jones Performance in the First Decade of the 21st Century" by artist Dr. Gan Yu. The original artwork blends financial data with expressive, mountainous landscapes and invites visitors to write directly on the artwork, making it a living piece of collaborative art.
+**A Digital Moving Mountain** is based on "A Moving Mountain – Dow Jones Performance in the First Decade of the 21st Century" by artist Dr. Gan Yu. The original artwork blends financial data with expressive, mountainous landscapes and invites visitors to write directly on the artwork, making it a living piece of collaborative art.
 
 This digital version allows visitors to:
 - Leave comments and reflections that appear as digital ink notes on the canvas

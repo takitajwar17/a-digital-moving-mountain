@@ -1,7 +1,7 @@
-const CACHE_NAME = 'footprints-across-ocean-v1';
-const STATIC_CACHE_NAME = 'footprints-static-v1';
-const DYNAMIC_CACHE_NAME = 'footprints-dynamic-v1';
-const ARTWORK_CACHE_NAME = 'footprints-artwork-v1';
+const CACHE_NAME = 'digital-mountain-v1';
+const STATIC_CACHE_NAME = 'digital-mountain-static-v1';
+const DYNAMIC_CACHE_NAME = 'digital-mountain-dynamic-v1';
+const ARTWORK_CACHE_NAME = 'digital-mountain-artwork-v1';
 
 // Assets to cache immediately
 const STATIC_ASSETS = [

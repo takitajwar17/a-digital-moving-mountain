@@ -1,4 +1,4 @@
-# FOOTPRINTS ACROSS THE OCEAN: A DIGITAL EXPERIENCE
+# A DIGITAL MOVING MOUNTAIN: A DIGITAL EXPERIENCE
 
 **Proposal – Based on "A Moving Mountain" by Md Nafisul Hasan Sami**
 

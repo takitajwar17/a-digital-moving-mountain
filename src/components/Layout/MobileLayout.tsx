@@ -27,7 +27,7 @@ export default function MobileLayout({
       <header className="bg-white shadow-sm border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-900">
-            Footprints Across the Ocean
+            A Digital Moving Mountain
           </h1>
           <button className="p-2 rounded-full hover:bg-gray-100">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

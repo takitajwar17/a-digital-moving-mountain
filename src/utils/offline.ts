@@ -12,7 +12,7 @@ export interface OfflineData {
   lastSync: number;
 }
 
-const OFFLINE_STORAGE_KEY = 'footprints_offline_data';
+const OFFLINE_STORAGE_KEY = 'digital_mountain_offline_data';
 
 /**
  * Check if the app is currently offline
@@ -172,7 +172,7 @@ export async function syncOfflineComments(): Promise<void> {
  */
 export function showOfflineNotification(): void {
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('Footprints Across the Ocean', {
+    new Notification('A Digital Moving Mountain', {
       body: 'You are now offline. Your comments will be saved and synced when you reconnect.',
       icon: '/icon-192x192.png'
     });
@@ -184,7 +184,7 @@ export function showOfflineNotification(): void {
  */
 export function showSyncNotification(count: number): void {
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('Footprints Across the Ocean', {
+    new Notification('A Digital Moving Mountain', {
       body: `${count} comment${count > 1 ? 's' : ''} synced successfully.`,
       icon: '/icon-192x192.png'
     });

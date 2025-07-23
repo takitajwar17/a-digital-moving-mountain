@@ -1,4 +1,4 @@
-# FOOTPRINTS ACROSS THE OCEAN - DETAILED DEVELOPMENT PLAN
+# A DIGITAL MOVING MOUNTAIN - DETAILED DEVELOPMENT PLAN
 
 ## Project Overview
 Interactive digital canvas based on "A Moving Mountain" by Dr. Gan Yu, allowing visitors to leave digital comments that appear as ink marks on the artwork. The system supports both in-person (touchscreen/tablet) and remote (QR code/mobile) participation.
@@ -345,4 +345,4 @@ src/
 - Artist approval and feedback
 - Media coverage and recognition
 
-This detailed plan provides a comprehensive roadmap for developing the "Footprints Across the Ocean" interactive digital canvas experience over the 6-week timeline.
+This detailed plan provides a comprehensive roadmap for developing the "A Digital Moving Mountain" interactive digital canvas experience over the 6-week timeline.

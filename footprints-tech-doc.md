@@ -1,4 +1,4 @@
-# Footprints Across the Ocean - Technical Specification Document
+# A Digital Moving Mountain - Technical Specification Document
 
 ## 1. Project Overview
 

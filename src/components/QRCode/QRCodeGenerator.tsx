@@ -57,7 +57,7 @@ export default function QRCodeGenerator({
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Footprints Across the Ocean - QR Codes</title>
+            <title>A Digital Moving Mountain - QR Codes</title>
             <style>
               body { font-family: Arial, sans-serif; padding: 20px; }
               .qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin: 20px 0; }
@@ -69,7 +69,7 @@ export default function QRCodeGenerator({
             </style>
           </head>
           <body>
-            <h1>Footprints Across the Ocean - QR Codes</h1>
+            <h1>A Digital Moving Mountain - QR Codes</h1>
             <p>Scan these QR codes to access the interactive artwork panels on your mobile device.</p>
             <div class="qr-grid">
         `;
@@ -87,7 +87,7 @@ export default function QRCodeGenerator({
         printHTML += `
             </div>
             <footer style="margin-top: 40px; text-align: center; color: #666; font-size: 12px;">
-              <p>Footprints Across the Ocean - Interactive Digital Art Experience</p>
+              <p>A Digital Moving Mountain - Interactive Digital Art Experience</p>
               <p>Based on "A Moving Mountain" by Dr. Gan Yu</p>
             </footer>
           </body>

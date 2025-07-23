@@ -203,7 +203,7 @@ export default function AdminPage() {
           <div className="flex items-center justify-between h-16">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Footprints Across the Ocean - Admin
+                A Digital Moving Mountain - Admin
               </h1>
               <p className="text-gray-600">
                 Manage your interactive art installation
