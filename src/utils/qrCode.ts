@@ -29,7 +29,8 @@ export function generatePanelURL(
     sessionId?: string;
   }
 ): string {
-  const url = new URL(baseURL);
+  // Ensure baseURL ends with /display for the main artwork viewer
+  const url = new URL(`${baseURL.replace(/\/$/, '')}/display`);
   url.searchParams.set('year', year.toString());
   
   if (options?.mode) {
@@ -40,7 +41,7 @@ export function generatePanelURL(
     url.searchParams.set('session', options.sessionId);
   }
   
-  // Add timestamp for cache busting
+  // Add timestamp for tracking
   url.searchParams.set('t', Date.now().toString());
   
   return url.toString();

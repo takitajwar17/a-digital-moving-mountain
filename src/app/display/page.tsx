@@ -21,6 +21,28 @@ export default function Display() {
   const [filter] = useState<CommentFilter>({ approved: true });
   const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
   
+  // Handle QR code parameters on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const yearParam = urlParams.get('year');
+      const modeParam = urlParams.get('mode');
+      
+      if (yearParam) {
+        const year = parseInt(yearParam);
+        const availableYears = getAvailableYears();
+        if (availableYears.includes(year)) {
+          setCurrentYear(year);
+        }
+      }
+      
+      // Handle different modes (gallery, mobile, kiosk)
+      if (modeParam === 'kiosk') {
+        setKiosk(true);
+      }
+    }
+  }, []);
+  
   // Update filter when year changes
   const yearFilter = { ...filter, year: currentYear };
   const { comments, addNewComment } = useComments(yearFilter);
