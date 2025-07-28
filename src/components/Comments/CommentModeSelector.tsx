@@ -30,7 +30,7 @@ export default function CommentModeSelector({
   if (mode === 'text') {
     return (
       <div 
-        className={`bg-white rounded-lg shadow-lg p-4 min-w-64 max-w-80 ${className}`}
+        className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-sm md:min-w-64 md:max-w-80 ${className}`}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
@@ -65,7 +65,7 @@ export default function CommentModeSelector({
   if (mode === 'drawing') {
     return (
       <div 
-        className={`bg-white rounded-lg shadow-lg p-4 min-w-64 ${className}`}
+        className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-sm md:min-w-64 md:max-w-80 ${className}`}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
@@ -103,7 +103,7 @@ export default function CommentModeSelector({
 
   // Mode selection
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-4 min-w-64 ${className}`}>
+    <div className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-sm md:min-w-64 md:max-w-80 ${className}`}>
       <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">
         Add Comment
       </h3>
@@ -111,7 +111,7 @@ export default function CommentModeSelector({
       <div className="space-y-2">
         <button
           onClick={() => setMode('text')}
-          className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+          className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
         >
           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -136,7 +136,7 @@ export default function CommentModeSelector({
 
         <button
           onClick={() => setMode('drawing')}
-          className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+          className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
         >
           <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -166,7 +166,7 @@ export default function CommentModeSelector({
       <div className="mt-4 text-center">
         <button
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          className="px-6 py-3 text-base text-gray-600 hover:text-gray-800 transition-colors touch-manipulation"
         >
           Cancel
         </button>

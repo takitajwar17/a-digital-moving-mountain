@@ -54,7 +54,7 @@ export default function CommentInput({
 
   return (
     <div 
-      className={`bg-white rounded-lg shadow-lg p-4 min-w-64 max-w-80 ${className}`}
+      className={`bg-white rounded-lg shadow-lg p-4 w-full max-w-sm md:min-w-64 md:max-w-80 ${className}`}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
@@ -67,23 +67,23 @@ export default function CommentInput({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           maxLength={maxLength}
-          rows={3}
-          className="w-full resize-none border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+          rows={4}
+          className="w-full resize-none border border-gray-300 rounded-md px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black touch-manipulation"
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
         />
         
-        <div className="flex justify-between items-center mt-3">
-          <span className="text-sm text-black">
+        <div className="flex justify-between items-center mt-4">
+          <span className="text-base text-black">
             {text.length}/{maxLength}
           </span>
           
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={onCancel}
-              className="px-3 py-1 text-sm text-black hover:text-gray-700 transition-colors"
+              className="px-4 py-2 text-base text-black hover:text-gray-700 transition-colors touch-manipulation"
             >
               Cancel
             </button>
@@ -91,7 +91,7 @@ export default function CommentInput({
             <button
               type="submit"
               disabled={!text.trim() || isSubmitting}
-              className="px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-blue-500 text-white text-base rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors touch-manipulation"
             >
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>

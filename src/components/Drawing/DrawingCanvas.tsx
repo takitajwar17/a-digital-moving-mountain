@@ -20,12 +20,13 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
-    canvas.width = 300;
-    canvas.height = 200;
+    // Set canvas size based on device
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    canvas.width = isMobile ? 280 : 300;
+    canvas.height = isMobile ? 250 : 200;
 
     // Set drawing style
-    ctx.lineWidth = 2;
+    ctx.lineWidth = isMobile ? 3 : 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#000000';
@@ -110,7 +111,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-4 ${className}`}>
+    <div className={`bg-white rounded-lg shadow-lg p-4 w-full ${className}`}>
       <div className="text-center mb-3">
         <h3 className="text-lg font-semibold text-gray-800">Draw Your Comment</h3>
         <p className="text-sm text-gray-600">Use your finger or stylus to draw</p>
@@ -118,8 +119,8 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
       <canvas
         ref={canvasRef}
-        className="border border-gray-300 rounded cursor-crosshair touch-none bg-transparent"
-        style={{ touchAction: 'none' }}
+        className="border border-gray-300 rounded cursor-crosshair touch-none bg-transparent w-full max-w-full"
+        style={{ touchAction: 'none', maxHeight: '60vh' }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -129,18 +130,18 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         onTouchEnd={stopDrawing}
       />
 
-      <div className="flex justify-between items-center mt-3">
+      <div className="flex justify-between items-center mt-4">
         <button
           onClick={clearCanvas}
-          className="px-3 py-1 text-sm text-black hover:text-gray-700 transition-colors"
+          className="px-4 py-2 text-base text-black hover:text-gray-700 transition-colors touch-manipulation"
         >
           Clear
         </button>
         
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="px-3 py-1 text-sm text-black hover:text-gray-700 transition-colors"
+            className="px-4 py-2 text-base text-black hover:text-gray-700 transition-colors touch-manipulation"
           >
             Cancel
           </button>
@@ -148,7 +149,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
           <button
             onClick={saveDrawing}
             disabled={!hasDrawn}
-            className="px-4 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 bg-blue-500 text-white text-base rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors touch-manipulation"
           >
             Save Drawing
           </button>

@@ -15,6 +15,8 @@ interface ArtworkPanelProps {
   onZoomChange?: (zoom: number) => void;
   panPosition: { x: number; y: number };
   onPanChange: (position: { x: number; y: number }) => void;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
   className?: string;
 }
 
@@ -27,6 +29,8 @@ export default function ArtworkPanel({
   onZoomChange,
   panPosition,
   onPanChange,
+  onSwipeLeft,
+  onSwipeRight,
   className = ''
 }: ArtworkPanelProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -36,6 +40,10 @@ export default function ArtworkPanel({
   const [commentPosition, setCommentPosition] = useState<{ x: number; y: number } | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  
+  // Touch gesture state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [touchMove, setTouchMove] = useState<{ x: number; y: number } | null>(null);
 
   // Reset image state when panel changes
   useEffect(() => {
@@ -44,7 +52,7 @@ export default function ArtworkPanel({
   }, [panel.imageUrl]);
 
   // Handle canvas click for adding comments
-  const handleCanvasClick = (event: React.MouseEvent) => {
+  const handleCanvasClick = (event: React.MouseEvent | React.TouchEvent) => {
     if (isDragging) return;
 
     // If already adding a comment, clicking outside should cancel it
@@ -57,8 +65,12 @@ export default function ArtworkPanel({
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const x = (event.clientX - rect.left - panPosition.x) / zoomLevel;
-    const y = (event.clientY - rect.top - panPosition.y) / zoomLevel;
+    // Get client coordinates from either mouse or touch event
+    const clientX = 'clientX' in event ? event.clientX : (event as React.TouchEvent).changedTouches[0].clientX;
+    const clientY = 'clientY' in event ? event.clientY : (event as React.TouchEvent).changedTouches[0].clientY;
+
+    const x = (clientX - rect.left - panPosition.x) / zoomLevel;
+    const y = (clientY - rect.top - panPosition.y) / zoomLevel;
 
     // Convert to relative coordinates (0-1)
     const relativeX = x / panel.dimensions.width;
@@ -89,6 +101,55 @@ export default function ArtworkPanel({
 
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  // Touch event handlers for mobile gestures
+  const handleTouchStart = (event: React.TouchEvent) => {
+    if (isAddingComment || event.touches.length !== 1) return;
+    
+    const touch = event.touches[0];
+    setTouchStart({
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now()
+    });
+    setTouchMove(null);
+  };
+
+  const handleTouchMove = (event: React.TouchEvent) => {
+    if (!touchStart || isAddingComment || event.touches.length !== 1) return;
+    
+    const touch = event.touches[0];
+    setTouchMove({
+      x: touch.clientX,
+      y: touch.clientY
+    });
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    if (!touchStart || isAddingComment) return;
+    
+    const touchEnd = touchMove || touchStart;
+    const deltaX = touchEnd.x - touchStart.x;
+    const deltaY = touchEnd.y - touchStart.y;
+    const deltaTime = Date.now() - touchStart.time;
+    
+    // Check if it's a swipe gesture (quick and mostly horizontal)
+    const isSwipe = Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 2 && deltaTime < 300;
+    
+    if (isSwipe) {
+      if (deltaX > 0 && onSwipeRight) {
+        onSwipeRight();
+      } else if (deltaX < 0 && onSwipeLeft) {
+        onSwipeLeft();
+      }
+    } else if (!touchMove || (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10)) {
+      // If no significant movement, treat as a tap for comment
+      handleCanvasClick(event as any);
+    }
+    
+    setTouchStart(null);
+    setTouchMove(null);
   };
 
   // Handle comment submission
@@ -143,6 +204,9 @@ export default function ArtworkPanel({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{ width: 'fit-content' }}
       >
         {/* Artwork Image */}

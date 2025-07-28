@@ -19,9 +19,28 @@ interface CommentOverlayProps {
 function getModalTransform(
   position: { x: number; y: number },
   panelDimensions: { width: number; height: number }
-): string {
+): { transform: string; position: 'fixed' | 'absolute'; fixedStyles?: any } {
   const modalWidth = 320; // approximate modal width
-  const modalHeight = 200; // approximate modal height
+  const modalHeight = 400; // increased for mobile touch targets
+  
+  // Check if we're on mobile (screen width < 768px)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
+  if (isMobile) {
+    // On mobile, always center the modal regardless of tap position
+    return {
+      transform: 'translate(-50%, -50%)',
+      position: 'fixed',
+      fixedStyles: {
+        top: '50%',
+        left: '50%',
+        zIndex: 1000,
+        width: '90vw',
+        maxWidth: '400px',
+        maxHeight: '85vh'
+      }
+    };
+  }
   
   let transformX = '-50%';
   let transformY = '-50%';
@@ -46,7 +65,10 @@ function getModalTransform(
     transformY = '0%';
   }
   
-  return `translate(${transformX}, ${transformY})`;
+  return {
+    transform: `translate(${transformX}, ${transformY})`,
+    position: 'absolute'
+  };
 }
 
 export default function CommentOverlay({
@@ -76,20 +98,22 @@ export default function CommentOverlay({
         >
           {comment.type === 'text' ? (
             <div 
-              className="bg-transparent px-3 py-2 cursor-pointer transition-all max-w-xs"
+              className="bg-transparent px-4 py-3 cursor-pointer transition-all max-w-xs touch-manipulation"
               onClick={() => onCommentClick(comment)}
+              onTouchStart={() => onCommentClick(comment)}
             >
-              <p className="text-sm text-black leading-relaxed font-medium drop-shadow-lg">{comment.text}</p>
+              <p className="text-base md:text-sm text-black leading-relaxed font-medium drop-shadow-lg">{comment.text}</p>
             </div>
           ) : (
             <div 
-              className="bg-transparent p-1 cursor-pointer transition-all"
+              className="bg-transparent p-2 cursor-pointer transition-all touch-manipulation"
               onClick={() => onCommentClick(comment)}
+              onTouchStart={() => onCommentClick(comment)}
             >
               <img 
                 src={comment.imageData} 
                 alt="User drawing" 
-                className="max-w-20 max-h-20 rounded drop-shadow-lg"
+                className="max-w-24 max-h-24 md:max-w-20 md:max-h-20 rounded drop-shadow-lg"
               />
             </div>
           )}
@@ -97,22 +121,42 @@ export default function CommentOverlay({
       ))}
 
       {/* New Comment Input */}
-      {isAddingComment && commentPosition && (
-        <div
-          className="absolute pointer-events-auto z-50"
-          style={{
-            left: `${commentPosition.x * panelDimensions.width}px`,
-            top: `${commentPosition.y * panelDimensions.height}px`,
-            transform: getModalTransform(commentPosition, panelDimensions)
-          }}
-        >
-          <CommentModeSelector
-            onSubmitText={onCommentSubmit}
-            onSubmitDrawing={onDrawingSubmit}
-            onCancel={onCommentCancel}
-          />
-        </div>
-      )}
+      {isAddingComment && commentPosition && (() => {
+        const positioning = getModalTransform(commentPosition, panelDimensions);
+        const isMobile = positioning.position === 'fixed';
+        
+        return (
+          <>
+            {/* Mobile backdrop */}
+            {isMobile && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 pointer-events-auto"
+                onClick={onCommentCancel}
+                onTouchStart={onCommentCancel}
+                style={{ zIndex: 999 }}
+              />
+            )}
+            
+            <div
+              className="pointer-events-auto z-50"
+              style={{
+                position: positioning.position,
+                left: positioning.position === 'fixed' ? undefined : `${commentPosition.x * panelDimensions.width}px`,
+                top: positioning.position === 'fixed' ? undefined : `${commentPosition.y * panelDimensions.height}px`,
+                transform: positioning.transform,
+                touchAction: 'manipulation',
+                ...positioning.fixedStyles
+              }}
+            >
+              <CommentModeSelector
+                onSubmitText={onCommentSubmit}
+                onSubmitDrawing={onDrawingSubmit}
+                onCancel={onCommentCancel}
+              />
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

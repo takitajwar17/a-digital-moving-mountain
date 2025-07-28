@@ -11,7 +11,8 @@
       "Bash(ls:*)",
       "Bash(npm run lint)",
       "Bash(timeout 10 npm run dev)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }

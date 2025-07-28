@@ -174,6 +174,8 @@ export default function Display() {
             onZoomChange={updateZoom}
             panPosition={settings.panPosition}
             onPanChange={updatePan}
+            onSwipeLeft={goToNext}
+            onSwipeRight={goToPrevious}
             className="h-full"
           />
           
