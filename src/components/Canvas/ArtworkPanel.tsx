@@ -12,6 +12,8 @@ interface ArtworkPanelProps {
   onCommentAdd: (position: { x: number; y: number }, text?: string, imageData?: string) => void;
   onCommentClick: (comment: Comment) => void;
   zoomLevel: number;
+  // onZoomChange is kept for future use but currently unused
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onZoomChange?: (zoom: number) => void;
   panPosition: { x: number; y: number };
   onPanChange: (position: { x: number; y: number }) => void;
@@ -145,7 +147,7 @@ export default function ArtworkPanel({
       }
     } else if (!touchMove || (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10)) {
       // If no significant movement, treat as a tap for comment
-      handleCanvasClick(event as any);
+      handleCanvasClick(event as unknown as React.MouseEvent);
     }
     
     setTouchStart(null);

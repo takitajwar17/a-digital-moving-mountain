@@ -19,7 +19,7 @@ interface CommentOverlayProps {
 function getModalTransform(
   position: { x: number; y: number },
   panelDimensions: { width: number; height: number }
-): { transform: string; position: 'fixed' | 'absolute'; fixedStyles?: any } {
+): { transform: string; position: 'fixed' | 'absolute'; fixedStyles?: React.CSSProperties } {
   const modalWidth = 320; // approximate modal width
   const modalHeight = 400; // increased for mobile touch targets
   
@@ -27,17 +27,21 @@ function getModalTransform(
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   
   if (isMobile) {
-    // On mobile, always center the modal regardless of tap position
+    // On mobile, use fixed positioning in the center of the viewport
     return {
-      transform: 'translate(-50%, -50%)',
       position: 'fixed',
+      transform: 'translate(-50%, -50%)',
       fixedStyles: {
-        top: '50%',
-        left: '50%',
-        zIndex: 1000,
+        top: '50vh',
+        left: '50vw',
         width: '90vw',
         maxWidth: '400px',
-        maxHeight: '85vh'
+        maxHeight: '85vh',
+        zIndex: 1000,
+        margin: 0,
+        padding: 0,
+        touchAction: 'none',
+        transformOrigin: 'center center'
       }
     };
   }
