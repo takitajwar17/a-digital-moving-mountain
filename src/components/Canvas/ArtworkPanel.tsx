@@ -277,6 +277,13 @@ export default function ArtworkPanel({
         </div>
       </div>
 
+      {/* Year display at bottom center */}
+      {imageLoaded && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg pointer-events-none">
+          <p className="text-lg font-semibold">{panel.year}</p>
+        </div>
+      )}
+
     </div>
   );
 }

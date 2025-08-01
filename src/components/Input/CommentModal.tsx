@@ -162,18 +162,18 @@ export default function CommentModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
-        className={cn("w-[95vw] max-w-[600px] h-[90vh] max-h-[500px] bg-white", className)}
+        className={cn("w-[47.5vw] max-w-[300px] h-[45vh] max-h-[250px] bg-white", className)}
         onPointerDownOutside={handleCancel}
         onEscapeKeyDown={handleCancel}
       >
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Add Your Comment</DialogTitle>
-          <DialogDescription className="text-base">
-            Share your thoughts about this artwork with the community
+          <DialogTitle className="text-sm sm:text-base">Add Your Comment</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
+            Share your thoughts about this artwork
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
           {/* Color Picker */}
           <ColorPicker
             selectedColor={selectedColor}
@@ -187,17 +187,17 @@ export default function CommentModal({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              rows={4}
+              rows={3}
               className={cn(
-                "resize-none bg-white min-h-[120px] text-base",
+                "resize-none bg-white min-h-[60px] text-sm",
                 isOverLimit && "border-destructive focus-visible:ring-destructive/20"
               )}
               maxLength={maxLength + 50}
-              style={{ fontSize: '16px' }} // Prevent zoom on iOS
+              style={{ fontSize: '14px' }} // Prevent zoom on iOS
             />
             
             {/* Character count */}
-            <div className="flex justify-end text-sm text-muted-foreground">
+            <div className="flex justify-end text-xs text-muted-foreground">
               <span className={cn(
                 isOverLimit ? "text-destructive" : 
                 isNearLimit ? "text-yellow-600" : "text-muted-foreground"

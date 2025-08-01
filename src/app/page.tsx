@@ -238,10 +238,6 @@ export default function Home() {
              {prevPanel ? prevPanel.year : 'Prev'}
           </button>
           
-          <div className="text-center px-4">
-            <p className="text-xl font-semibold">{currentPanel.year}</p>
-          </div>
-          
           <button
             onClick={goToNext}
             disabled={!nextPanel}
@@ -293,10 +289,6 @@ export default function Home() {
             className="h-full"
           />
           
-          {/* Overlay controls */}
-          <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-2 rounded">
-            <p className="text-lg font-semibold">{currentPanel.year}</p>
-          </div>
           
         </div>
 
