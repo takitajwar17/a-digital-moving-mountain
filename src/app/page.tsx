@@ -163,6 +163,22 @@ export default function Home() {
   // Responsive layout
   return (
     <div className="h-screen overflow-hidden bg-black">
+      {/* Logo - Fixed position for all layouts */}
+      <a 
+        href="https://adigitalmovingmountain.com/" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed top-4 left-4 z-50 w-12 h-12 transition-all duration-200 hover:scale-105"
+      >
+        <Image
+          src="/logo.svg"
+          alt="A Digital Moving Mountain"
+          width={48}
+          height={48}
+          className="w-full h-full object-contain"
+        />
+      </a>
+
       {/* Mobile Layout */}
       <div className="md:hidden flex flex-col h-full">
         {/* Mobile main image */}
