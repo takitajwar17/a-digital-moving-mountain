@@ -26,7 +26,7 @@ export default function ZoomControls({
   const isVertical = className?.includes('flex-col');
   
   return (
-    <div className={`flex ${isVertical ? 'flex-col items-center' : 'items-center'} gap-1 bg-black bg-opacity-75 p-2 rounded-lg ${className?.replace('flex-col', '') || ''}`}>
+    <div className={`flex ${isVertical ? 'flex-col items-center' : 'items-center'} gap-1 bg-black bg-opacity-75 p-1.5 rounded-lg ${className?.replace('flex-col', '') || ''}`}>
       <button
         onClick={handleZoomIn}
         className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-md transition-colors font-bold text-sm"
