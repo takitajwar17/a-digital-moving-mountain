@@ -78,8 +78,8 @@ export default function CommentModeSelector({
           </Button>
         </div>
         
-        {/* Mode indicators - horizontal below header */}
-        <div className="flex gap-2 px-4 pb-2">
+        {/* Mode indicators - horizontal below header, aligned right */}
+        <div className="flex gap-2 px-4 pb-2 justify-end">
           <button
             onClick={() => setMode('text')}
             className={cn(
@@ -136,13 +136,46 @@ export default function CommentModeSelector({
 
       {/* Bottom section */}
       <div className="flex items-center justify-between px-4 pb-4">
-        <div className="flex items-center gap-2">
-          {/* Color picker */}
-          <ColorPicker
-            selectedColor={selectedColor}
-            onColorChange={setSelectedColor}
-            compact={true}
-          />
+        <div className="flex items-center gap-1">
+          {/* Color picker - show all three colors */}
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setSelectedColor('#000000')}
+              className={cn(
+                "w-8 h-8 rounded-full border-2 transition-all",
+                selectedColor === '#000000' 
+                  ? "border-gray-800 ring-2 ring-gray-400 ring-offset-1" 
+                  : "border-gray-300 hover:border-gray-400"
+              )}
+              style={{ backgroundColor: '#000000' }}
+              title="Black"
+            />
+            <button
+              type="button"
+              onClick={() => setSelectedColor('#ffffff')}
+              className={cn(
+                "w-8 h-8 rounded-full border-2 transition-all",
+                selectedColor === '#ffffff' 
+                  ? "border-gray-400 ring-2 ring-gray-400 ring-offset-1" 
+                  : "border-gray-300 hover:border-gray-400"
+              )}
+              style={{ backgroundColor: '#ffffff' }}
+              title="White"
+            />
+            <button
+              type="button"
+              onClick={() => setSelectedColor('#6b7280')}
+              className={cn(
+                "w-8 h-8 rounded-full border-2 transition-all",
+                selectedColor === '#6b7280' 
+                  ? "border-gray-600 ring-2 ring-gray-400 ring-offset-1" 
+                  : "border-gray-300 hover:border-gray-400"
+              )}
+              style={{ backgroundColor: '#6b7280' }}
+              title="Gray"
+            />
+          </div>
         </div>
         
         <div className="flex items-center gap-2">
