@@ -26,7 +26,7 @@ export default function ZoomControls({
   const isVertical = className?.includes('flex-col');
   
   return (
-    <div className={`flex ${isVertical ? 'flex-col' : ''} gap-1 bg-black bg-opacity-75 p-1.5 rounded-lg ${className?.replace('flex-col', '') || ''}`}>
+    <div className={`flex ${isVertical ? 'flex-col items-center' : 'items-center'} gap-1 bg-black bg-opacity-75 p-2 rounded-lg ${className?.replace('flex-col', '') || ''}`}>
       <button
         onClick={handleZoomIn}
         className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-md transition-colors font-bold text-sm"
@@ -35,9 +35,9 @@ export default function ZoomControls({
         <Plus className="h-4 w-4" />
       </button>
       
-      <span className="text-xs text-white px-2 py-1 flex items-center font-medium min-w-[40px] justify-center">
+      <div className="text-xs text-white px-1 flex items-center justify-center font-medium min-w-[40px]">
         {Math.round(zoomLevel * 100)}%
-      </span>
+      </div>
       
       <button
         onClick={handleZoomOut}
