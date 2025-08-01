@@ -385,12 +385,13 @@ export default function Home() {
             />
           </div>
           
-          {/* Zoom controls at bottom for desktop */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-40">
+          {/* Zoom controls at bottom left for desktop */}
+          <div className="absolute bottom-4 left-4 z-40">
             <ZoomControls
               zoomLevel={settings.zoomLevel}
               onZoomChange={updateZoom}
               onReset={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
+              className="flex-col"
             />
           </div>
         </div>
