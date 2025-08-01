@@ -8,6 +8,7 @@ interface ColorPickerProps {
   selectedColor: string;
   onColorChange: (color: string) => void;
   className?: string;
+  compact?: boolean;
 }
 
 const COLORS = [
@@ -16,7 +17,31 @@ const COLORS = [
   { name: 'White', value: '#ffffff' },
 ];
 
-export function ColorPicker({ selectedColor, onColorChange, className }: ColorPickerProps) {
+export function ColorPicker({ selectedColor, onColorChange, className, compact = false }: ColorPickerProps) {
+  if (compact) {
+    // Render as a single button that cycles through colors
+    const currentColorIndex = COLORS.findIndex(c => c.value === selectedColor);
+    const currentColor = COLORS[currentColorIndex] || COLORS[0];
+    
+    const handleClick = () => {
+      const nextIndex = (currentColorIndex + 1) % COLORS.length;
+      onColorChange(COLORS[nextIndex].value);
+    };
+    
+    return (
+      <button
+        type="button"
+        className={cn(
+          "w-8 h-8 rounded-full border-2 border-gray-300 hover:border-gray-400 transition-all",
+          className
+        )}
+        style={{ backgroundColor: currentColor.value }}
+        onClick={handleClick}
+        title={`Color: ${currentColor.name} (click to change)`}
+      />
+    );
+  }
+
   return (
     <div className={cn("space-y-2", className)}>
       <label className="text-sm font-medium leading-none">Color</label>

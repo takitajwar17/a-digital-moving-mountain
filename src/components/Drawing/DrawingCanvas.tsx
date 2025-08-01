@@ -13,6 +13,7 @@ interface DrawingCanvasProps {
   embedded?: boolean;
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
   onDrawingChange?: (hasDrawn: boolean) => void;
+  selectedColor?: string;
 }
 
 export default function DrawingCanvas({ 
@@ -21,12 +22,16 @@ export default function DrawingCanvas({
   className = '', 
   embedded = false,
   onCanvasReady,
-  onDrawingChange 
+  onDrawingChange,
+  selectedColor: externalSelectedColor
 }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#000000');
+  const [internalSelectedColor, setInternalSelectedColor] = useState('#000000');
+  
+  // Use external color if provided, otherwise use internal
+  const selectedColor = externalSelectedColor || internalSelectedColor;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -190,8 +195,8 @@ export default function DrawingCanvas({
         {/* Color Picker */}
         <div className="flex-shrink-0">
           <ColorPicker
-            selectedColor={selectedColor}
-            onColorChange={setSelectedColor}
+            selectedColor={internalSelectedColor}
+            onColorChange={setInternalSelectedColor}
           />
         </div>
 

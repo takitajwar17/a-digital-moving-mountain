@@ -128,6 +128,7 @@ export default function CommentModeSelector({
             embedded={true}
             onCanvasReady={setCanvasRef}
             onDrawingChange={setHasDrawn}
+            selectedColor={selectedColor}
           />
         )}
       </div>
