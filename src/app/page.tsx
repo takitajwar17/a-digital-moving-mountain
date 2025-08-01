@@ -11,6 +11,7 @@ import { findAvailablePosition } from '@/utils/coordinateSystem';
 
 // Canvas components
 import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
+import ZoomControls from '@/components/Canvas/ZoomControls';
 
 // Sample data
 import { 
@@ -256,57 +257,81 @@ export default function Home() {
 
 
       {/* Mobile Layout */}
-      <div className="md:hidden flex flex-col h-full">
-        {/* Mobile main image */}
-        <div className="flex-1 relative overflow-hidden">
-          <div 
-            className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
-              isAnimating && animationDirection === 'left' ? '-translate-x-full' :
-              isAnimating && animationDirection === 'right' ? 'translate-x-full' :
-              'translate-x-0'
-            }`}
-          >
-            <ArtworkPanel
-              panel={currentPanel}
-              comments={panelComments}
-              onCommentAdd={handleCommentAdd}
-              onCommentClick={handleCommentClick}
-              zoomLevel={settings.zoomLevel}
-              onZoomChange={updateZoom}
-              panPosition={settings.panPosition}
-              onPanChange={updatePan}
-              onSwipeLeft={goToNext}
-              onSwipeRight={goToPrevious}
-              className="h-full"
-            />
-          </div>
+      <div className="md:hidden h-full relative">
+        {/* Zoom controls at top middle */}
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-40">
+          <ZoomControls
+            zoomLevel={settings.zoomLevel}
+            onZoomChange={updateZoom}
+            onReset={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
+          />
         </div>
-        
-        {/* Mobile bottom navigation */}
-        <div className="flex items-center justify-between p-4 bg-black text-white border-t border-gray-700 flex-shrink-0">
+
+        {/* Main content area with image */}
+        <div className="h-full flex items-center justify-center relative">
+          {/* Left navigation arrow */}
           <button
             onClick={goToPrevious}
             disabled={!prevPanel || isAnimating}
-            className={`flex items-center gap-2 px-6 py-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation ${
+            className={`absolute left-2 z-30 w-12 h-12 flex items-center justify-center rounded-full transition-all ${
               prevPanel && !isAnimating
-                ? 'bg-white bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40' 
-                : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
+                ? 'bg-black/70 text-white hover:bg-black/90' 
+                : 'bg-black/30 text-gray-500 cursor-not-allowed'
             }`}
           >
-             {prevPanel ? prevPanel.year : 'Prev'}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
-          
+
+          {/* Image container with animation */}
+          <div className="w-full h-full flex items-center justify-center px-16">
+            <div 
+              className={`relative transition-transform duration-300 ease-in-out w-full h-full flex items-center justify-center ${
+                isAnimating && animationDirection === 'left' ? '-translate-x-full' :
+                isAnimating && animationDirection === 'right' ? 'translate-x-full' :
+                'translate-x-0'
+              }`}
+            >
+              <div className="relative" style={{ maxWidth: '100%', maxHeight: '100%' }}>
+                <ArtworkPanel
+                  panel={currentPanel}
+                  comments={panelComments}
+                  onCommentAdd={handleCommentAdd}
+                  onCommentClick={handleCommentClick}
+                  zoomLevel={settings.zoomLevel}
+                  onZoomChange={updateZoom}
+                  panPosition={settings.panPosition}
+                  onPanChange={updatePan}
+                  onSwipeLeft={goToNext}
+                  onSwipeRight={goToPrevious}
+                  className="w-auto h-auto"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right navigation arrow */}
           <button
             onClick={goToNext}
             disabled={!nextPanel || isAnimating}
-            className={`flex items-center gap-2 px-6 py-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation ${
+            className={`absolute right-2 z-30 w-12 h-12 flex items-center justify-center rounded-full transition-all ${
               nextPanel && !isAnimating
-                ? 'bg-white bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40' 
-                : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
+                ? 'bg-black/70 text-white hover:bg-black/90' 
+                : 'bg-black/30 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {nextPanel ? nextPanel.year : 'Next'} 
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
+        </div>
+
+        {/* Year display at bottom center */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="bg-black/70 text-white px-6 py-2 rounded-full">
+            <p className="text-lg font-semibold">{currentPanel.year}</p>
+          </div>
         </div>
       </div>
 
