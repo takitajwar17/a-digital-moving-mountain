@@ -10,9 +10,19 @@ interface DrawingCanvasProps {
   onSave: (imageData: string, color: string) => void;
   onCancel: () => void;
   className?: string;
+  embedded?: boolean;
+  onCanvasReady?: (canvas: HTMLCanvasElement) => void;
+  onDrawingChange?: (hasDrawn: boolean) => void;
 }
 
-export default function DrawingCanvas({ onSave, onCancel, className = '' }: DrawingCanvasProps) {
+export default function DrawingCanvas({ 
+  onSave, 
+  onCancel, 
+  className = '', 
+  embedded = false,
+  onCanvasReady,
+  onDrawingChange 
+}: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
@@ -25,9 +35,16 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set consistent canvas size with better landscape proportions (50% of original)
-    canvas.width = 210;
-    canvas.height = 80;
+    // Set canvas size based on embedded mode
+    if (embedded) {
+      // For embedded mode, use larger canvas
+      canvas.width = 360;
+      canvas.height = 140;
+    } else {
+      // Original size for standalone mode
+      canvas.width = 210;
+      canvas.height = 80;
+    }
 
     // Set drawing style - check for mobile viewport
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -38,7 +55,12 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
     // Fill with transparent background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }, [selectedColor]);
+
+    // Notify parent when canvas is ready
+    if (onCanvasReady) {
+      onCanvasReady(canvas);
+    }
+  }, [selectedColor, embedded, onCanvasReady]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault();
@@ -52,7 +74,12 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     ctx.strokeStyle = selectedColor;
     
     setIsDrawing(true);
-    setHasDrawn(true);
+    if (!hasDrawn) {
+      setHasDrawn(true);
+      if (onDrawingChange) {
+        onDrawingChange(true);
+      }
+    }
 
     const rect = canvas.getBoundingClientRect();
     let x, y;
@@ -107,6 +134,9 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasDrawn(false);
+    if (onDrawingChange) {
+      onDrawingChange(false);
+    }
   };
 
   const saveDrawing = () => {
@@ -118,6 +148,42 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     onSave(imageData, selectedColor);
   };
 
+  // Embedded mode - just the canvas
+  if (embedded) {
+    return (
+      <div className={cn("w-full h-full flex items-center justify-center relative", className)}>
+        <canvas
+          ref={canvasRef}
+          className="border border-gray-200 rounded-lg cursor-crosshair touch-none bg-white"
+          style={{ 
+            touchAction: 'none', 
+            width: '360px', 
+            height: '140px',
+            maxWidth: '100%',
+            maxHeight: '100%'
+          }}
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+        />
+        <Button
+          variant="outline"
+          onClick={clearCanvas}
+          size="sm"
+          className="absolute top-2 right-2 h-6 text-xs"
+        >
+          <RotateCcw className="h-3 w-3 mr-1" />
+          Clear
+        </Button>
+      </div>
+    );
+  }
+
+  // Standalone mode - full UI
   return (
     <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col overflow-hidden", className)}>
       <div className="p-2 flex-1 flex flex-col space-y-1 min-h-0">

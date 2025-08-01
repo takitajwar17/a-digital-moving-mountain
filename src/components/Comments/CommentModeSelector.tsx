@@ -1,16 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, Paintbrush, X } from 'lucide-react';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { MessageSquare, Paintbrush, X, Type, PenTool, Upload, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CommentModal from '@/components/Input/CommentModal';
 import DrawingCanvas from '@/components/Drawing/DrawingCanvas';
+import { ColorPicker } from '@/components/ui/color-picker';
 import { cn } from '@/lib/utils';
 
 interface CommentModeSelectorProps {
@@ -27,66 +22,149 @@ export default function CommentModeSelector({
   className = ''
 }: CommentModeSelectorProps) {
   const [mode, setMode] = useState<'text' | 'drawing'>('text');
+  const [text, setText] = useState('');
+  const [selectedColor, setSelectedColor] = useState('#000000');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null);
+  const [hasDrawn, setHasDrawn] = useState(false);
 
-  const handleTextSubmit = (text: string, color: string) => {
-    onSubmitText(text, color);
+  const maxLength = 250;
+  const remainingChars = maxLength - text.length;
+
+  const handleTextSubmit = async () => {
+    if (!text.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onSubmitText(text.trim(), selectedColor);
+      setText('');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleDrawingSubmit = (imageData: string, color: string) => {
-    onSubmitDrawing(imageData, color);
+  const handleDrawingSubmit = () => {
+    if (!canvasRef || !hasDrawn) return;
+    const imageData = canvasRef.toDataURL('image/png');
+    onSubmitDrawing(imageData, selectedColor);
+  };
+
+  const handleSubmit = () => {
+    if (mode === 'text') {
+      handleTextSubmit();
+    } else {
+      handleDrawingSubmit();
+    }
   };
 
   return (
     <div 
-      className={cn("w-[47.5vw] max-w-[300px] h-[45vh] max-h-[350px] bg-white rounded-xl border shadow-lg flex flex-col overflow-hidden", className)}
+      className={cn("w-[400px] h-[300px] bg-white rounded-xl border shadow-lg flex flex-col overflow-hidden", className)}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
     >
-      <div className="p-2 pb-1 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold leading-none">Add Comment</h2>
+      {/* Header */}
+      <div className="flex items-start justify-between p-4 pb-2">
+        <h2 className="text-base font-semibold">Add Comment</h2>
+        <div className="flex items-start gap-2">
+          {/* Mode indicators */}
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={() => setMode('drawing')}
+              className={cn(
+                "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                mode === 'drawing' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="Drawing mode"
+            >
+              <PenTool className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => setMode('text')}
+              className={cn(
+                "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                mode === 'text' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="Text mode"
+            >
+              <Type className="h-3 w-3" />
+            </button>
+          </div>
+          {/* Close button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onCancel}
-            className="h-6 w-6"
+            className="h-6 w-6 -mr-1"
           >
-            <X className="h-3 w-3" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="px-2 pb-2 flex-1 flex flex-col min-h-0">
-        <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')} className="h-full flex flex-col min-h-0">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-2 h-8">
-            <TabsTrigger value="text" className="flex items-center gap-1 bg-white data-[state=active]:bg-white text-xs h-7">
-              <MessageSquare className="h-3 w-3" />
-              Text
-            </TabsTrigger>
-            <TabsTrigger value="drawing" className="flex items-center gap-1 bg-white data-[state=active]:bg-white text-xs h-7">
-              <Paintbrush className="h-3 w-3" />
-              Draw
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="text" className="mt-0 flex-1 min-h-0 overflow-hidden">
-            <CommentModal
-              onSubmit={handleTextSubmit}
-              onCancel={onCancel}
-              className="border-none shadow-none bg-transparent h-full"
-              embedded={true}
+      {/* Main content area */}
+      <div className="flex-1 px-4 pb-2 min-h-0">
+        {mode === 'text' ? (
+          <div className="h-full flex flex-col">
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value.slice(0, maxLength))}
+              placeholder="Share your thoughts..."
+              className="flex-1 w-full resize-none border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+              style={{ minHeight: '120px' }}
             />
-          </TabsContent>
+            <div className="text-xs text-gray-500 text-right mt-1">
+              {text.length}/{maxLength}
+            </div>
+          </div>
+        ) : (
+          <DrawingCanvas
+            onSave={(imageData) => {
+              // This will be handled by handleSubmit
+              setHasDrawn(true);
+            }}
+            onCancel={onCancel}
+            className="h-full border-none shadow-none bg-transparent p-0"
+            embedded={true}
+            onCanvasReady={setCanvasRef}
+            onDrawingChange={setHasDrawn}
+          />
+        )}
+      </div>
 
-          <TabsContent value="drawing" className="mt-0 flex-1 min-h-0 overflow-hidden">
-            <DrawingCanvas
-              onSave={handleDrawingSubmit}
-              onCancel={onCancel}
-              className="border-none shadow-none bg-transparent h-full"
-            />
-          </TabsContent>
-        </Tabs>
+      {/* Bottom section */}
+      <div className="flex items-center justify-between px-4 pb-4">
+        <div className="flex items-center gap-2">
+          {/* Color picker */}
+          <ColorPicker
+            selectedColor={selectedColor}
+            onColorChange={setSelectedColor}
+            compact={true}
+          />
+          {/* Upload button (placeholder) */}
+          <button className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+            <Upload className="h-4 w-4 text-gray-600" />
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onCancel}
+            className="h-8 px-4 text-xs"
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={(mode === 'text' && !text.trim()) || (mode === 'drawing' && !hasDrawn)}
+            className="h-8 px-4 text-xs"
+          >
+            Post
+          </Button>
+        </div>
       </div>
     </div>
   );
