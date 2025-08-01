@@ -243,7 +243,7 @@ export default function Home() {
         href="https://adigitalmovingmountain.com/" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed top-2 left-6 z-50 w-16 h-16 transition-all duration-200 hover:scale-105"
+        className="fixed top-1 left-6 z-50 w-16 h-16 transition-all duration-200 hover:scale-105"
       >
         <Image
           src="/logo.svg"
