@@ -16,18 +16,17 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Comment, CommentInput } from '@/types/comment';
-// @ts-ignore - bad-words has mixed module types
-import Filter from 'bad-words';
+import * as leoProfanity from 'leo-profanity';
 
 const COLLECTION_NAME = 'comments';
 
 // Initialize profanity filter
-const profanityFilter = new Filter();
+leoProfanity.loadDictionary('en');
 
 // Check if comment contains profanity
 function containsProfanity(text: string): boolean {
   if (!text || text.trim() === '') return false;
-  return profanityFilter.isProfane(text);
+  return leoProfanity.check(text);
 }
 
 // Convert Firestore document to Comment type
