@@ -252,6 +252,11 @@ export default function ArtworkPanel({
               height: '100vh',
               width: 'auto',
               objectFit: 'contain',
+              ...(className?.includes('mobile-view') ? {
+                width: '100vw',
+                height: 'auto',
+                maxHeight: '100vh'
+              } : {})
             }}
           />
 

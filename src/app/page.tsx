@@ -289,7 +289,7 @@ export default function Home() {
                 onPanChange={updatePan}
                 onSwipeLeft={goToNext}
                 onSwipeRight={goToPrevious}
-                className="w-full h-full"
+                className="w-full h-full mobile-view"
               />
             </div>
           </div>
