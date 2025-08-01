@@ -21,6 +21,8 @@ import {
 export default function Home() {
   const [filter] = useState<CommentFilter>({ approved: true });
   const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
   
   // Handle QR code parameters on mount
   useEffect(() => {
@@ -93,6 +95,67 @@ export default function Home() {
     setKiosk(isKioskMode());
   }, []);
 
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Prevent navigation when typing in input fields
+      if (event.target instanceof HTMLInputElement || 
+          event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          event.preventDefault();
+          goToPrevious();
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          event.preventDefault();
+          goToNext();
+          break;
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          event.preventDefault();
+          // Go to first year
+          if (availableYears.length > 0) {
+            handleYearChange(availableYears[0]);
+          }
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          event.preventDefault();
+          // Go to last year
+          if (availableYears.length > 0) {
+            handleYearChange(availableYears[availableYears.length - 1]);
+          }
+          break;
+        case 'Home':
+          event.preventDefault();
+          // Go to first year
+          if (availableYears.length > 0) {
+            handleYearChange(availableYears[0]);
+          }
+          break;
+        case 'End':
+          event.preventDefault();
+          // Go to last year
+          if (availableYears.length > 0) {
+            handleYearChange(availableYears[availableYears.length - 1]);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentYear, availableYears, goToPrevious, goToNext, handleYearChange]);
+
   // Handle comment addition
   const handleCommentAdd = async (position: { x: number; y: number }, text?: string, imageData?: string, color?: string) => {
     try {
@@ -125,9 +188,23 @@ export default function Home() {
   };
 
 
-  // Handle year navigation
+  // Handle year navigation with animation
   const handleYearChange = (year: number) => {
-    setCurrentYear(year);
+    if (isAnimating || year === currentYear) return;
+    
+    const currentIndex = availableYears.indexOf(currentYear);
+    const newIndex = availableYears.indexOf(year);
+    
+    setAnimationDirection(newIndex > currentIndex ? 'left' : 'right');
+    setIsAnimating(true);
+    
+    setTimeout(() => {
+      setCurrentYear(year);
+      setTimeout(() => {
+        setIsAnimating(false);
+        setAnimationDirection(null);
+      }, 50);
+    }, 300);
   };
 
   // Show loading screen only if current image is loading and no images are loaded yet
@@ -207,30 +284,37 @@ export default function Home() {
       {/* Mobile Layout */}
       <div className="md:hidden flex flex-col h-full">
         {/* Mobile main image */}
-        <div className="flex-1 relative">
-          <ArtworkPanel
-            panel={currentPanel}
-            comments={panelComments}
-            onCommentAdd={handleCommentAdd}
-            onCommentClick={handleCommentClick}
-            zoomLevel={settings.zoomLevel}
-            onZoomChange={updateZoom}
-            panPosition={settings.panPosition}
-            onPanChange={updatePan}
-            onSwipeLeft={goToNext}
-            onSwipeRight={goToPrevious}
-            className="h-full"
-          />
-          
+        <div className="flex-1 relative overflow-hidden">
+          <div 
+            className={`absolute inset-0 transition-transform duration-300 ease-in-out ${
+              isAnimating && animationDirection === 'left' ? '-translate-x-full' :
+              isAnimating && animationDirection === 'right' ? 'translate-x-full' :
+              'translate-x-0'
+            }`}
+          >
+            <ArtworkPanel
+              panel={currentPanel}
+              comments={panelComments}
+              onCommentAdd={handleCommentAdd}
+              onCommentClick={handleCommentClick}
+              zoomLevel={settings.zoomLevel}
+              onZoomChange={updateZoom}
+              panPosition={settings.panPosition}
+              onPanChange={updatePan}
+              onSwipeLeft={goToNext}
+              onSwipeRight={goToPrevious}
+              className="h-full"
+            />
+          </div>
         </div>
         
         {/* Mobile bottom navigation */}
         <div className="flex items-center justify-between p-4 bg-black text-white border-t border-gray-700 flex-shrink-0">
           <button
             onClick={goToPrevious}
-            disabled={!prevPanel}
+            disabled={!prevPanel || isAnimating}
             className={`flex items-center gap-2 px-6 py-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation ${
-              prevPanel 
+              prevPanel && !isAnimating
                 ? 'bg-white bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40' 
                 : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
             }`}
@@ -240,9 +324,9 @@ export default function Home() {
           
           <button
             onClick={goToNext}
-            disabled={!nextPanel}
+            disabled={!nextPanel || isAnimating}
             className={`flex items-center gap-2 px-6 py-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation ${
-              nextPanel 
+              nextPanel && !isAnimating
                 ? 'bg-white bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40' 
                 : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
             }`}
@@ -257,7 +341,7 @@ export default function Home() {
         {/* Left side - Previous image */}
         <div className="flex-1 flex items-center justify-center relative">
           {prevPanel && (
-            <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToPrevious}>
+            <div className={`relative transition-all duration-300 ${!isAnimating ? 'cursor-pointer hover:opacity-60' : 'cursor-not-allowed'}`} onClick={!isAnimating ? goToPrevious : undefined}>
               <Image
                 src={prevPanel.imageUrl}
                 alt={`Artwork ${prevPanel.year}`}
@@ -276,26 +360,32 @@ export default function Home() {
         </div>
 
         {/* Center - Main image */}
-        <div className="flex-shrink-0 flex items-center justify-center relative">
-          <ArtworkPanel
-            panel={currentPanel}
-            comments={panelComments}
-            onCommentAdd={handleCommentAdd}
-            onCommentClick={handleCommentClick}
-            zoomLevel={settings.zoomLevel}
-            onZoomChange={updateZoom}
-            panPosition={settings.panPosition}
-            onPanChange={updatePan}
-            className="h-full"
-          />
-          
-          
+        <div className="flex-shrink-0 flex items-center justify-center relative overflow-hidden">
+          <div 
+            className={`transition-transform duration-300 ease-in-out ${
+              isAnimating && animationDirection === 'left' ? '-translate-x-full' :
+              isAnimating && animationDirection === 'right' ? 'translate-x-full' :
+              'translate-x-0'
+            }`}
+          >
+            <ArtworkPanel
+              panel={currentPanel}
+              comments={panelComments}
+              onCommentAdd={handleCommentAdd}
+              onCommentClick={handleCommentClick}
+              zoomLevel={settings.zoomLevel}
+              onZoomChange={updateZoom}
+              panPosition={settings.panPosition}
+              onPanChange={updatePan}
+              className="h-full"
+            />
+          </div>
         </div>
 
         {/* Right side - Next image */}
         <div className="flex-1 flex items-center justify-center relative">
           {nextPanel && (
-            <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToNext}>
+            <div className={`relative transition-all duration-300 ${!isAnimating ? 'cursor-pointer hover:opacity-60' : 'cursor-not-allowed'}`} onClick={!isAnimating ? goToNext : undefined}>
               <Image
                 src={nextPanel.imageUrl}
                 alt={`Artwork ${nextPanel.year}`}
