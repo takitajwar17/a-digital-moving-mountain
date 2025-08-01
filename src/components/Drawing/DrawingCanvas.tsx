@@ -1,6 +1,17 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { RotateCcw, Save, X } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface DrawingCanvasProps {
   onSave: (imageData: string) => void;
@@ -111,50 +122,61 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg p-4 w-full ${className}`}>
-      <div className="text-center mb-3">
-        <h3 className="text-lg font-semibold text-gray-800">Draw Your Comment</h3>
-        <p className="text-sm text-gray-600">Use your finger or stylus to draw</p>
-      </div>
+    <Card className={cn("w-full", className)}>
+      <CardHeader className="text-center">
+        <CardTitle>Draw Your Comment</CardTitle>
+        <CardDescription>
+          Use your finger or stylus to draw
+        </CardDescription>
+      </CardHeader>
 
-      <canvas
-        ref={canvasRef}
-        className="border border-gray-300 rounded cursor-crosshair touch-none bg-transparent w-full max-w-full"
-        style={{ touchAction: 'none', maxHeight: '60vh' }}
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={draw}
-        onTouchEnd={stopDrawing}
-      />
+      <CardContent>
+        <div className="flex justify-center">
+          <canvas
+            ref={canvasRef}
+            className="border border-border rounded-md cursor-crosshair touch-none bg-background"
+            style={{ touchAction: 'none', maxHeight: '60vh' }}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+          />
+        </div>
+      </CardContent>
 
-      <div className="flex justify-between items-center mt-4">
-        <button
+      <CardFooter className="flex justify-between">
+        <Button
+          variant="outline"
           onClick={clearCanvas}
-          className="px-4 py-2 text-base text-black hover:text-gray-700 transition-colors touch-manipulation"
+          size="sm"
         >
+          <RotateCcw className="h-4 w-4 mr-2" />
           Clear
-        </button>
+        </Button>
         
-        <div className="flex gap-3">
-          <button
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
             onClick={onCancel}
-            className="px-4 py-2 text-base text-black hover:text-gray-700 transition-colors touch-manipulation"
+            size="sm"
           >
+            <X className="h-4 w-4 mr-2" />
             Cancel
-          </button>
+          </Button>
           
-          <button
+          <Button
             onClick={saveDrawing}
             disabled={!hasDrawn}
-            className="px-6 py-2 bg-blue-500 text-white text-base rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors touch-manipulation"
+            size="sm"
           >
+            <Save className="h-4 w-4 mr-2" />
             Save Drawing
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

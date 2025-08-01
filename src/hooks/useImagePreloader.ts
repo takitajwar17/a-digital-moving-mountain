@@ -57,6 +57,7 @@ export function useImagePreloader(
       setPreloadedImages(newMap);
       preloadedImagesRef.current = newMap;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialImages.length]); // Only depend on length to prevent restarts
 
   // Calculate statistics

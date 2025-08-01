@@ -12,8 +12,6 @@ interface ArtworkPanelProps {
   onCommentAdd: (position: { x: number; y: number }, text?: string, imageData?: string) => void;
   onCommentClick: (comment: Comment) => void;
   zoomLevel: number;
-  // onZoomChange is kept for future use but currently unused
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onZoomChange?: (zoom: number) => void;
   panPosition: { x: number; y: number };
   onPanChange: (position: { x: number; y: number }) => void;
@@ -28,7 +26,8 @@ export default function ArtworkPanel({
   onCommentAdd,
   onCommentClick,
   zoomLevel,
-  onZoomChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onZoomChange: _,
   panPosition,
   onPanChange,
   onSwipeLeft,
