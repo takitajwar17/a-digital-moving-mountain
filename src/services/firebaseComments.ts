@@ -16,8 +16,18 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Comment, CommentInput } from '@/types/comment';
+import Filter from 'bad-words';
 
 const COLLECTION_NAME = 'comments';
+
+// Initialize profanity filter
+const profanityFilter = new Filter();
+
+// Check if comment contains profanity
+function containsProfanity(text: string): boolean {
+  if (!text || text.trim() === '') return false;
+  return profanityFilter.isProfane(text);
+}
 
 // Convert Firestore document to Comment type
 function convertFirestoreDoc(doc: DocumentSnapshot<DocumentData>): Comment {
@@ -42,9 +52,13 @@ function convertFirestoreDoc(doc: DocumentSnapshot<DocumentData>): Comment {
 }
 
 // Add a new comment to Firebase
-export async function addComment(commentInput: CommentInput): Promise<Comment> {
+export async function addComment(commentInput: CommentInput): Promise<Comment & { isPending?: boolean }> {
   try {
     console.log('📝 Adding comment to Firebase:', commentInput);
+    
+    // Check for profanity in text comments
+    const hasProfanity = commentInput.text ? containsProfanity(commentInput.text) : false;
+    const isAutoApproved = !hasProfanity;
     
     const commentData = {
       text: commentInput.text || null,
@@ -55,14 +69,15 @@ export async function addComment(commentInput: CommentInput): Promise<Comment> {
       year: commentInput.year,
       timestamp: serverTimestamp(),
       userId: generateUserId(),
-      approved: false, // Comments start as pending for moderation
+      approved: isAutoApproved, // Auto-approve clean comments
       color: normalizeColor(commentInput.color), // Normalize and validate color
       metadata: {
         device: commentInput.device,
         inputMethod: commentInput.inputMethod,
         sessionId: generateSessionId(),
         userAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        moderationReason: hasProfanity ? 'profanity_detected' : null
       }
     };
     
@@ -71,18 +86,25 @@ export async function addComment(commentInput: CommentInput): Promise<Comment> {
     const docRef = await addDoc(collection(db, COLLECTION_NAME), commentData);
     console.log('✅ Comment saved with ID:', docRef.id);
     
-    // Return the comment with the generated ID
+    if (hasProfanity) {
+      console.log('⚠️ Comment flagged for review due to profanity');
+    } else {
+      console.log('✅ Comment auto-approved');
+    }
+    
+    // Return the comment with the generated ID and pending status
     return {
       id: docRef.id,
       ...commentData,
       timestamp: Date.now(),
       language: commentData.language || undefined,
       color: commentData.color, // Include color in returned comment
+      isPending: hasProfanity, // Add pending flag for UI feedback
       metadata: {
         ...commentData.metadata,
         createdAt: Date.now()
       }
-    } as Comment;
+    } as Comment & { isPending?: boolean };
   } catch (error) {
     console.error('❌ Error adding comment to Firebase:', error);
     throw new Error('Failed to add comment');

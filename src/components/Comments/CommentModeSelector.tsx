@@ -110,6 +110,12 @@ export default function CommentModeSelector({
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value.slice(0, maxLength))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
               placeholder="Share your thoughts..."
               className="flex-1 w-full resize-none border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
               style={{ minHeight: '120px' }}
