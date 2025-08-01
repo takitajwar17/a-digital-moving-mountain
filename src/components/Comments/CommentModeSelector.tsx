@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, Paintbrush, X, Type, PenTool, Upload, Palette } from 'lucide-react';
+import { MessageSquare, Paintbrush, X, Type, PenTool } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CommentModal from '@/components/Input/CommentModal';
 import DrawingCanvas from '@/components/Drawing/DrawingCanvas';
@@ -64,32 +64,9 @@ export default function CommentModeSelector({
       onTouchStart={(e) => e.stopPropagation()}
     >
       {/* Header */}
-      <div className="flex items-start justify-between p-4 pb-2">
-        <h2 className="text-base font-semibold">Add Comment</h2>
-        <div className="flex items-start gap-2">
-          {/* Mode indicators */}
-          <div className="flex flex-col gap-1">
-            <button
-              onClick={() => setMode('drawing')}
-              className={cn(
-                "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                mode === 'drawing' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              )}
-              title="Drawing mode"
-            >
-              <PenTool className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => setMode('text')}
-              className={cn(
-                "w-6 h-6 rounded flex items-center justify-center transition-colors",
-                mode === 'text' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              )}
-              title="Text mode"
-            >
-              <Type className="h-3 w-3" />
-            </button>
-          </div>
+      <div className="relative">
+        <div className="flex items-start justify-between p-4 pb-2">
+          <h2 className="text-base font-semibold">Add Comment</h2>
           {/* Close button */}
           <Button
             variant="ghost"
@@ -99,6 +76,30 @@ export default function CommentModeSelector({
           >
             <X className="h-4 w-4" />
           </Button>
+        </div>
+        
+        {/* Mode indicators - horizontal below header */}
+        <div className="flex gap-2 px-4 pb-2">
+          <button
+            onClick={() => setMode('text')}
+            className={cn(
+              "w-6 h-6 rounded flex items-center justify-center transition-colors",
+              mode === 'text' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            )}
+            title="Text mode"
+          >
+            <Type className="h-3 w-3" />
+          </button>
+          <button
+            onClick={() => setMode('drawing')}
+            className={cn(
+              "w-6 h-6 rounded flex items-center justify-center transition-colors",
+              mode === 'drawing' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            )}
+            title="Drawing mode"
+          >
+            <PenTool className="h-3 w-3" />
+          </button>
         </div>
       </div>
 
@@ -142,10 +143,6 @@ export default function CommentModeSelector({
             onColorChange={setSelectedColor}
             compact={true}
           />
-          {/* Upload button (placeholder) */}
-          <button className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
-            <Upload className="h-4 w-4 text-gray-600" />
-          </button>
         </div>
         
         <div className="flex items-center gap-2">
