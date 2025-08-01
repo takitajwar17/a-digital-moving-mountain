@@ -168,37 +168,37 @@ export default function Home() {
         href="https://adigitalmovingmountain.com/" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="fixed top-4 left-4 z-50 w-12 h-12 transition-all duration-200 hover:scale-105"
+        className="fixed top-4 left-4 z-50 w-16 h-16 transition-all duration-200 hover:scale-105"
       >
         <Image
           src="/logo.svg"
           alt="A Digital Moving Mountain"
-          width={48}
-          height={48}
+          width={64}
+          height={64}
           className="w-full h-full object-contain"
         />
       </a>
 
       {/* Zoom controls - Fixed position outside image */}
-      <div className="fixed top-4 left-20 z-40 flex gap-2 bg-black bg-opacity-75 p-2 rounded-lg">
+      <div className="fixed top-4 left-24 z-40 flex gap-1 bg-black bg-opacity-75 p-1.5 rounded-lg">
         <button
           onClick={() => updateZoom(Math.max(settings.zoomLevel / 1.2, 0.5))}
-          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-bold text-base md:text-lg touch-manipulation"
+          className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-md transition-colors font-bold text-sm touch-manipulation"
         >
           −
         </button>
-        <span className="text-sm text-white px-3 py-1 flex items-center font-medium min-w-[50px] justify-center">
+        <span className="text-xs text-white px-2 py-1 flex items-center font-medium min-w-[40px] justify-center">
           {Math.round(settings.zoomLevel * 100)}%
         </span>
         <button
           onClick={() => updateZoom(Math.min(settings.zoomLevel * 1.2, 3))}
-          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-bold text-base md:text-lg touch-manipulation"
+          className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-md transition-colors font-bold text-sm touch-manipulation"
         >
           +
         </button>
         <button
           onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
-          className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors text-sm font-bold touch-manipulation"
+          className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-md transition-colors text-xs font-bold touch-manipulation"
         >
           ↺
         </button>
