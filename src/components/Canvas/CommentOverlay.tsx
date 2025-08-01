@@ -125,7 +125,7 @@ export default function CommentOverlay({
                 style={{ borderColor: comment.color || '#000000' }}
               >
                 <Image 
-                  src={comment.imageData} 
+                  src={comment.imageData || ''} 
                   alt="User drawing" 
                   width={96}
                   height={96}

@@ -2,19 +2,40 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { AlertTriangle, Users, Clock, CheckCircle, XCircle, MoreHorizontal, Download, QrCode, BarChart3, Shield, LogOut, Search, Filter, RefreshCw, Trash2, Eye, Settings } from 'lucide-react';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+
 import QRCodeGenerator from '@/components/QRCode/QRCodeGenerator';
 import { getAvailableYears } from '@/data/sampleArtwork';
-import { subscribeToAllComments, deleteComment } from '@/services/firebaseComments';
+import { subscribeToAllComments, deleteComment, updateCommentApproval, bulkUpdateComments, searchComments, exportComments } from '@/services/firebaseComments';
 import { Comment } from '@/types/comment';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'qr-codes' | 'analytics' | 'moderation'>('qr-codes');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'moderation' | 'qr'>('dashboard');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'approved' | 'pending'>('all');
+  const [selectedComments, setSelectedComments] = useState<string[]>([]);
   const [analytics, setAnalytics] = useState<{
     total: number;
     approved: number;
@@ -26,7 +47,32 @@ export default function AdminPage() {
     todayComments: number;
     weeklyGrowth: number;
   } | null>(null);
+  const [qrGenerating, setQrGenerating] = useState(false);
   const availableYears = getAvailableYears();
+  
+  // Export functionality
+  const handleExport = async (format: 'csv' | 'json') => {
+    try {
+      setError(null);
+      const data = await exportComments(format);
+      
+      // Create and download file
+      const blob = new Blob([data], { 
+        type: format === 'csv' ? 'text/csv' : 'application/json' 
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `comments-export-${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+      setError('Failed to export data. Please try again.');
+    }
+  };
 
   // Simple authentication - in production, use proper auth service
   const ADMIN_USERNAME = 'admin';
@@ -34,6 +80,7 @@ export default function AdminPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
       setAuthError('');
@@ -51,16 +98,75 @@ export default function AdminPage() {
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (confirm('Are you sure you want to delete this comment?')) {
-      try {
-        await deleteComment(commentId);
-        setComments(prev => prev.filter(c => c.id !== commentId));
-      } catch (error) {
-        console.error('Failed to delete comment:', error);
-        alert('Failed to delete comment. Please try again.');
-      }
+    try {
+      setError(null);
+      await deleteComment(commentId);
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      setError('Failed to delete comment. Please try again.');
     }
   };
+
+  const handleApproveComment = async (commentId: string, approved: boolean) => {
+    try {
+      setError(null);
+      await updateCommentApproval(commentId, approved);
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, approved } : c));
+    } catch (error) {
+      console.error('Failed to update comment approval:', error);
+      setError('Failed to update comment. Please try again.');
+    }
+  };
+
+  const handleBulkAction = async (action: 'approve' | 'reject' | 'delete') => {
+    if (selectedComments.length === 0) return;
+    
+    setBulkLoading(true);
+    setError(null);
+    
+    try {
+      const results = await bulkUpdateComments(selectedComments, action);
+      
+      if (results.failed.length > 0) {
+        setError(`${action} completed with ${results.failed.length} failures out of ${selectedComments.length} items`);
+      }
+      
+      // Update local state for successful operations
+      if (action === 'delete') {
+        setComments(prev => prev.filter(c => !results.success.includes(c.id)));
+      } else {
+        setComments(prev => prev.map(c => 
+          results.success.includes(c.id) 
+            ? { ...c, approved: action === 'approve' }
+            : c
+        ));
+      }
+      
+      setSelectedComments([]);
+    } catch (error) {
+      console.error(`Bulk ${action} failed:`, error);
+      setError(`Failed to ${action} selected comments. Please try again.`);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const filteredComments = comments.filter(comment => {
+    const matchesSearch = comment.text?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         comment.userId?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || 
+                         (filterStatus === 'approved' && comment.approved) || 
+                         (filterStatus === 'pending' && !comment.approved);
+    return matchesSearch && matchesFilter;
+  });
+
+  const urgentComments = comments.filter(c => !c.approved).length;
+  const todayComments = comments.filter(c => {
+    const today = new Date();
+    const commentDate = new Date(c.timestamp);
+    return commentDate.toDateString() === today.toDateString();
+  }).length;
 
   // Check authentication on mount
   useEffect(() => {
@@ -68,13 +174,41 @@ export default function AdminPage() {
     setIsAuthenticated(authenticated);
   }, []);
 
+  // Debounced search functionality
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    const debounceTimeout = setTimeout(async () => {
+      if (searchTerm || filterStatus !== 'all') {
+        setSearchLoading(true);
+        try {
+          const results = await searchComments({
+            searchTerm: searchTerm || undefined,
+            status: filterStatus,
+            limit: 100
+          });
+          setComments(results);
+          updateAnalytics(results);
+        } catch (error) {
+          console.error('Search failed:', error);
+          setError('Search failed. Please try again.');
+        } finally {
+          setSearchLoading(false);
+        }
+      }
+    }, 300);
+    
+    return () => clearTimeout(debounceTimeout);
+  }, [searchTerm, filterStatus, isAuthenticated]);
+  
   // Subscribe to comments
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !searchTerm && filterStatus === 'all') {
       setLoading(true);
       const unsubscribe = subscribeToAllComments((allComments) => {
         setComments(allComments);
         setLoading(false);
+        setError(null);
         
         // Update analytics when comments change
         updateAnalytics(allComments);
@@ -82,7 +216,7 @@ export default function AdminPage() {
 
       return () => unsubscribe();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, searchTerm, filterStatus]);
 
   // Update analytics based on comments
   const updateAnalytics = (allComments: Comment[]) => {
@@ -142,67 +276,75 @@ export default function AdminPage() {
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-            <p className="text-gray-600 mt-2">Sign in to access the admin panel</p>
-          </div>
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            
-            {authError && (
-              <div className="text-red-600 text-sm">{authError}</div>
-            )}
-            
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Sign In
-            </button>
-          </form>
-          
-        </div>
+      <div className="light min-h-screen bg-white text-black flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white border-gray-200">
+          <CardHeader className="text-center bg-white">
+            <CardTitle className="text-2xl text-black">Admin Login</CardTitle>
+            <CardDescription className="text-gray-600">Sign in to access the admin panel</CardDescription>
+          </CardHeader>
+          <CardContent className="bg-white">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="username" className="text-sm font-medium text-black">
+                  Username
+                </label>
+                <Input
+                  className="bg-white border-gray-300 text-black"
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="password" className="text-sm font-medium text-black">
+                  Password
+                </label>
+                <Input
+                  className="bg-white border-gray-300 text-black"
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
+              {authError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              )}
+              
+              {error && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                <Shield className="mr-2 h-4 w-4" />
+                Sign In
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="light min-h-screen bg-white text-black">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+      <header className="border-b border-gray-200 bg-white">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="text-black">
+              <h1 className="text-2xl font-bold text-black">
                 A Digital Moving Mountain - Admin
               </h1>
               <p className="text-gray-600">
@@ -210,443 +352,677 @@ export default function AdminPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Status</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm text-green-600">Online</span>
-                </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-green-600">Online</span>
               </div>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
+              <Button variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
                 Logout
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('qr-codes')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'qr-codes'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              QR Codes
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'analytics'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab('moderation')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'moderation'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
+      <div className="container mx-auto px-4 py-6">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2 data-[state=active]:bg-gray-100 data-[state=active]:text-black text-gray-700 hover:text-black">
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="moderation" className="flex items-center gap-2 data-[state=active]:bg-gray-100 data-[state=active]:text-black text-gray-700 hover:text-black">
+              <Shield className="h-4 w-4" />
               Moderation
-            </button>
-          </div>
-        </div>
-      </nav>
+              {urgentComments > 0 && (
+                <Badge variant="destructive" className="ml-1 bg-red-600 text-white">
+                  {urgentComments}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="qr" className="flex items-center gap-2 data-[state=active]:bg-gray-100 data-[state=active]:text-black text-gray-700 hover:text-black">
+              <QrCode className="h-4 w-4" />
+              QR Codes
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'qr-codes' && (
-          <div className="space-y-6">
+          <TabsContent value="dashboard" className="space-y-6">
+            {/* Welcome and Quick Actions */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="bg-white">
+                  <CardTitle className="flex items-center gap-2 text-black">
+                    <Users className="h-5 w-5" />
+                    Welcome Back, Admin
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Here&apos;s what&apos;s happening with your installation today.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="bg-white">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {todayComments} new comments today
+                  </div>
+                  <p className="text-gray-600 mt-1">
+                    {analytics?.total || 0} total comments across all years
+                  </p>
+                </CardContent>
+              </Card>
+
+              {urgentComments > 0 && (
+                <Card className="border-red-500 bg-white">
+                  <CardHeader className="bg-white">
+                    <CardTitle className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="h-5 w-5" />
+                      Urgent Actions Required
+                    </CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Comments pending your review
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="bg-white">
+                    <div className="text-2xl font-bold text-red-600 mb-2">
+                      {urgentComments} pending approval
+                    </div>
+                    <Button 
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                      size="sm"
+                      onClick={() => setActiveTab('moderation')}
+                    >
+                      Review Now
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card className="bg-white border-gray-200">
+                <CardContent className="pt-6 bg-white">
+                  <div className="flex items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Comments</p>
+                      <div className="text-2xl font-bold text-black">{analytics?.total || 0}</div>
+                    </div>
+                    <Users className="h-8 w-8 text-gray-400 ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white border-gray-200">
+                <CardContent className="pt-6 bg-white">
+                  <div className="flex items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Approved</p>
+                      <div className="text-2xl font-bold text-green-600">{analytics?.approved || 0}</div>
+                    </div>
+                    <CheckCircle className="h-8 w-8 text-green-600 ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white border-gray-200">
+                <CardContent className="pt-6 bg-white">
+                  <div className="flex items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Pending</p>
+                      <div className="text-2xl font-bold text-orange-600">{analytics?.pending || 0}</div>
+                    </div>
+                    <Clock className="h-8 w-8 text-orange-600 ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-white border-gray-200">
+                <CardContent className="pt-6 bg-white">
+                  <div className="flex items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Today</p>
+                      <div className="text-2xl font-bold text-blue-600">{todayComments}</div>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-blue-600 ml-auto" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="bg-white">
+                <CardTitle className="text-black">Recent Activity</CardTitle>
+                <CardDescription className="text-gray-600">Latest comments from visitors</CardDescription>
+              </CardHeader>
+              <CardContent className="bg-white">
+                <div className="space-y-4">
+                  {comments.slice(0, 5).map((comment) => (
+                    <div key={comment.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-black">
+                          {comment.text || 'Drawing comment'} 
+                          <Badge variant="outline" className="ml-2 border-gray-300 text-gray-700">
+                            Year {comment.year}
+                          </Badge>
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(comment.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                      <Badge className={comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}>
+                        {comment.approved ? 'Approved' : 'Pending'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="moderation" className="space-y-6">
+            {/* Error Display */}
+            {error && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            {/* Moderation Header */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-black">Content Moderation</h2>
+                <p className="text-gray-600">
+                  Review and manage user-generated comments
+                </p>
+              </div>
+              
+              {selectedComments.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    {selectedComments.length} selected
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50" disabled={bulkLoading}>
+                        {bulkLoading ? (
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <MoreHorizontal className="mr-2 h-4 w-4" />
+                        )}
+                        Bulk Actions
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-white border-gray-200">
+                      <DropdownMenuItem className="text-black hover:bg-gray-100" onClick={() => handleBulkAction('approve')}>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Approve Selected
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-black hover:bg-gray-100" onClick={() => handleBulkAction('reject')}>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Reject Selected
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => handleBulkAction('delete')}
+                        className="text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete Selected
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
+            </div>
+
+            {/* Filters and Search */}
+            <Card className="bg-white border-gray-200">
+              <CardContent className="pt-6 bg-white">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      {searchLoading ? (
+                        <RefreshCw className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+                      ) : (
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      )}
+                      <Input
+                        placeholder="Search comments..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 bg-white border-gray-300 text-black"
+                        disabled={searchLoading}
+                      />
+                    </div>
+                  </div>
+                  <Select value={filterStatus} onValueChange={(value: 'all' | 'approved' | 'pending') => setFilterStatus(value)}>
+                    <SelectTrigger className="w-[180px] bg-white border-gray-300 text-black">
+                      <Filter className="mr-2 h-4 w-4" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-gray-200">
+                      <SelectItem className="text-black hover:bg-gray-100" value="all">All Comments</SelectItem>
+                      <SelectItem className="text-black hover:bg-gray-100" value="pending">Pending Review</SelectItem>
+                      <SelectItem className="text-black hover:bg-gray-100" value="approved">Approved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Comments Table */}
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="bg-white">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-black">Comments ({filteredComments.length})</CardTitle>
+                  <Button variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50" size="sm" onClick={() => window.location.reload()}>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="bg-white">
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin" />
+                    <span className="ml-2 text-black">Loading comments...</span>
+                  </div>
+                ) : filteredComments.length === 0 ? (
+                  <div className="text-center py-8 text-gray-600">
+                    No comments found matching your criteria.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table className="bg-white">
+                    <TableHeader className="bg-gray-50">
+                      <TableRow className="border-gray-200">
+                        <TableHead className="w-12 text-black">
+                          <Checkbox
+                            checked={selectedComments.length === filteredComments.length && filteredComments.length > 0}
+                            onCheckedChange={(checked) => {
+                              setSelectedComments(
+                                checked ? filteredComments.map(c => c.id) : []
+                              );
+                            }}
+                            aria-label="Select all comments"
+                          />
+                        </TableHead>
+                        <TableHead className="min-w-[200px] text-black">Content</TableHead>
+                        <TableHead className="min-w-[80px] text-black">Year</TableHead>
+                        <TableHead className="min-w-[100px] text-black">Date</TableHead>
+                        <TableHead className="min-w-[100px] text-black">Status</TableHead>
+                        <TableHead className="min-w-[120px] text-black">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className="bg-white">
+                      {filteredComments.map((comment) => (
+                        <TableRow key={comment.id} className="hover:bg-gray-50 border-gray-200">
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedComments.includes(comment.id)}
+                              onCheckedChange={(checked) => {
+                                setSelectedComments(prev => 
+                                  checked 
+                                    ? [...prev, comment.id]
+                                    : prev.filter(id => id !== comment.id)
+                                );
+                              }}
+                              aria-label={`Select comment ${comment.id}`}
+                            />
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <div className="space-y-1">
+                              {comment.text && (
+                                <p className="text-sm truncate text-black">{comment.text}</p>
+                              )}
+                              {comment.imageData && (
+                                <div className="flex items-center gap-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <div 
+                                        className="border-2 rounded p-1 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                                        style={{ borderColor: comment.color || '#000000' }}
+                                      >
+                                        <Image 
+                                          src={comment.imageData} 
+                                          alt="Drawing thumbnail" 
+                                          width={48}
+                                          height={48}
+                                          className="rounded object-cover"
+                                          unoptimized={true}
+                                        />
+                                      </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="bg-white border-gray-200 max-w-2xl">
+                                      <DialogHeader className="bg-white">
+                                        <DialogTitle className="text-black">Drawing - Year {comment.year}</DialogTitle>
+                                        <DialogDescription className="text-gray-600">
+                                          {new Date(comment.timestamp).toLocaleString()} • Color: {comment.color || '#000000'}
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <div className="flex justify-center p-4">
+                                        <div 
+                                          className="border-4 rounded-lg p-2"
+                                          style={{ borderColor: comment.color || '#000000' }}
+                                        >
+                                          <Image 
+                                            src={comment.imageData} 
+                                            alt="Full size drawing" 
+                                            width={500}
+                                            height={400}
+                                            className="rounded object-contain max-w-full h-auto"
+                                            unoptimized={true}
+                                          />
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                                    <Eye className="h-3 w-3" />
+                                    Drawing
+                                  </div>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
+                                  {comment.type}
+                                </Badge>
+                                {comment.color && (
+                                  <div 
+                                    className="w-3 h-3 rounded-full border" 
+                                    style={{ backgroundColor: comment.color }}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="border-gray-300 text-gray-700">{comment.year}</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {new Date(comment.timestamp).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}>
+                              {comment.approved ? 'Approved' : 'Pending'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {!comment.approved && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                                  onClick={() => handleApproveComment(comment.id, true)}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {comment.approved && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                                  onClick={() => handleApproveComment(comment.id, false)}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="bg-white border-gray-200">
+                                  <DialogHeader className="bg-white">
+                                    <DialogTitle className="text-black">Comment Details</DialogTitle>
+                                    <DialogDescription className="text-gray-600">
+                                      Year {comment.year} • {new Date(comment.timestamp).toLocaleString()}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    {comment.text && (
+                                      <div>
+                                        <h4 className="font-medium mb-2 text-black">Text Content</h4>
+                                        <p className="text-sm bg-gray-100 p-3 rounded text-black">{comment.text}</p>
+                                      </div>
+                                    )}
+                                    {comment.imageData && (
+                                      <div>
+                                        <h4 className="font-medium mb-2 text-black">Drawing</h4>
+                                        <Image 
+                                          src={comment.imageData} 
+                                          alt="User drawing" 
+                                          width={300}
+                                          height={200}
+                                          className="border rounded"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <span className="font-medium text-black">Status:</span>
+                                        <Badge className={`ml-2 ${comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}`}>
+                                          {comment.approved ? 'Approved' : 'Pending'}
+                                        </Badge>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium text-black">Type:</span>
+                                        <Badge className="ml-2 border-gray-300 text-gray-700" variant="outline">{comment.type}</Badge>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium text-black">Device:</span>
+                                        <span className="ml-2 text-gray-600">{comment.metadata?.device || 'Unknown'}</span>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium text-black">Input:</span>
+                                        <span className="ml-2 text-gray-600">{comment.metadata?.inputMethod || 'Unknown'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="text-red-600 hover:text-red-700 bg-white border-gray-300 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+
+          <TabsContent value="qr" className="space-y-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                QR Code Management
-              </h2>
+              <h2 className="text-2xl font-bold text-black">QR Code Management</h2>
               <p className="text-gray-600">
                 Generate and manage QR codes for gallery installations, mobile access, and sharing artwork panels.
               </p>
             </div>
 
-            {/* QR Code Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
-                <h4 className="text-sm font-medium text-gray-500">Total QR Codes</h4>
-                <p className="text-xl font-bold text-blue-600 mt-1">{availableYears.length}</p>
-                <p className="text-sm text-gray-500 mt-1">Active artwork panels</p>
-              </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
+                  <CardTitle className="text-sm font-medium text-black">Total QR Codes</CardTitle>
+                  <QrCode className="h-4 w-4 text-gray-600" />
+                </CardHeader>
+                <CardContent className="bg-white">
+                  <div className="text-2xl font-bold text-blue-600">{availableYears.length}</div>
+                  <p className="text-xs text-gray-600">Active artwork panels</p>
+                </CardContent>
+              </Card>
               
-              <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
-                <h4 className="text-sm font-medium text-gray-500">Gallery Mode</h4>
-                <p className="text-xl font-bold text-green-600 mt-1">Ready</p>
-                <p className="text-sm text-gray-500 mt-1">High-resolution codes</p>
-              </div>
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
+                  <CardTitle className="text-sm font-medium text-black">Gallery Mode</CardTitle>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent className="bg-white">
+                  <div className="text-2xl font-bold text-green-600">Ready</div>
+                  <p className="text-xs text-gray-600">High-resolution codes</p>
+                </CardContent>
+              </Card>
               
-              <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-                <h4 className="text-sm font-medium text-gray-500">Print Ready</h4>
-                <p className="text-xl font-bold text-purple-600 mt-1">Available</p>
-                <p className="text-sm text-gray-500 mt-1">PDF download ready</p>
-              </div>
+              <Card className="bg-white border-gray-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
+                  <CardTitle className="text-sm font-medium text-black">Print Ready</CardTitle>
+                  <Download className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent className="bg-white">
+                  <div className="text-2xl font-bold text-purple-600">Available</div>
+                  <p className="text-xs text-gray-600">PDF download ready</p>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-3">Quick Actions</h4>
-              <div className="flex flex-wrap gap-2">
-                <button className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
-                  Generate All Mobile QR Codes
-                </button>
-                <button className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors">
-                  Download Gallery Pack
-                </button>
-                <button className="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors">
-                  Create Print Sheet
-                </button>
-                <button className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition-colors">
-                  Generate Share Links
-                </button>
-              </div>
-            </div>
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="bg-white">
+                <CardTitle className="text-black">Quick Actions</CardTitle>
+                <CardDescription className="text-gray-600">Generate and manage QR codes for different use cases</CardDescription>
+              </CardHeader>
+              <CardContent className="bg-white">
+                <div className="flex flex-wrap gap-3">
+                  <Button 
+                    disabled={qrGenerating}
+                    onClick={async () => {
+                      setQrGenerating(true);
+                      try {
+                        // Trigger QR code generation for all years
+                        const event = new CustomEvent('generateAllQRCodes');
+                        window.dispatchEvent(event);
+                      } catch {
+                        setError('Failed to generate QR codes');
+                      } finally {
+                        setQrGenerating(false);
+                      }
+                    }}
+                  >
+                    {qrGenerating ? (
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <QrCode className="mr-2 h-4 w-4" />
+                    )}
+                    Generate All Mobile QR Codes
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                    onClick={() => {
+                      const baseURL = window.location.origin;
+                      const links = availableYears.map(year => `${baseURL}/?year=${year}`).join('\n');
+                      const blob = new Blob([`A Digital Moving Mountain - Share Links\n\n${links}`], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'share-links.txt';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Share Links
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                    onClick={() => {
+                      const event = new CustomEvent('generatePrintableQRCodes');
+                      window.dispatchEvent(event);
+                    }}
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Create Print Sheet
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                    onClick={() => {
+                      // Generate tracking URLs for analytics
+                      const trackingLinks = availableYears.map(year => 
+                        `${window.location.origin}/?year=${year}&utm_source=qr&utm_medium=print&utm_campaign=gallery`
+                      ).join('\n');
+                      const blob = new Blob([`Tracking URLs for Analytics:\n\n${trackingLinks}`], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'tracking-urls.txt';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    Generate Tracking URLs
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
             
-            <QRCodeGenerator
-              years={availableYears}
-              mode="mobile"
-              className="bg-white p-6 rounded-lg shadow-md"
-            />
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="bg-white">
+                <CardTitle className="text-black">QR Code Generator</CardTitle>
+                <CardDescription className="text-gray-600">Generate QR codes for each artwork year</CardDescription>
+              </CardHeader>
+              <CardContent className="bg-white">
+                <QRCodeGenerator
+                  years={availableYears}
+                  mode="mobile"
+                  className=""
+                />
+              </CardContent>
+            </Card>
 
-            {/* QR Code Usage Guide */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Guidelines</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Gallery Installation</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Use high-resolution QR codes (512px minimum)</li>
-                    <li>• Place codes at eye level (48-60 inches)</li>
-                    <li>• Ensure good lighting without glare</li>
-                    <li>• Include brief instructions for visitors</li>
-                    <li>• Test scanning from 2-3 feet distance</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Mobile Sharing</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Standard resolution (256px) works well</li>
-                    <li>• Include year information in QR code</li>
-                    <li>• Direct link to specific artwork panel</li>
-                    <li>• Optimized for mobile viewing experience</li>
-                    <li>• Trackable for engagement analytics</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Analytics Dashboard
-              </h2>
-              <p className="text-gray-600">
-                Monitor visitor engagement, comment activity, and system performance.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Stats Cards */}
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-sm font-medium text-gray-500">Total Comments</h3>
-                <p className="text-2xl font-bold text-blue-600 mt-2">
-                  {analytics?.total.toLocaleString() || 0}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {analytics?.weeklyGrowth !== undefined 
-                    ? `${analytics.weeklyGrowth >= 0 ? '+' : ''}${analytics.weeklyGrowth}% from last week`
-                    : 'Loading...'}
-                </p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-sm font-medium text-gray-500">Today&apos;s Comments</h3>
-                <p className="text-2xl font-bold text-green-600 mt-2">
-                  {analytics?.todayComments || 0}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">New comments today</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-sm font-medium text-gray-500">Languages</h3>
-                <p className="text-2xl font-bold text-purple-600 mt-2">
-                  {analytics ? Object.keys(analytics.byLanguage).length : 0}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Different languages</p>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-sm font-medium text-gray-500">Approval Rate</h3>
-                <p className="text-2xl font-bold text-orange-600 mt-2">
-                  {analytics ? Math.round((analytics.approved / Math.max(analytics.total, 1)) * 100) : 0}%
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {analytics?.pending || 0} pending approval
-                </p>
-              </div>
-            </div>
-
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Comments by Year Chart */}
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments by Year</h3>
-                <div className="space-y-4">
-                  {availableYears.map((year) => {
-                    const count = analytics?.byYear[year] || 0;
-                    const maxCount = Math.max(...Object.values(analytics?.byYear || {}), 1);
-                    const percentage = (count / maxCount) * 100;
-                    return (
-                      <div key={year} className="flex items-center">
-                        <span className="w-12 text-sm text-gray-600">{year}</span>
-                        <div className="flex-1 mx-4 bg-gray-200 rounded-full h-3">
-                          <div 
-                            className="bg-blue-600 h-3 rounded-full transition-all duration-500" 
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="text-sm text-gray-500 w-16 text-right">
-                          {count} comment{count !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Device Usage Chart */}
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Device Usage</h3>
-                <div className="space-y-4">
-                  {analytics && Object.entries(analytics.byDevice)
-                    .sort(([,a], [,b]) => b - a)
-                    .map(([device, count]) => {
-                      const percentage = (count / analytics.total) * 100;
-                      const colors = {
-                        mobile: 'bg-green-600',
-                        desktop: 'bg-blue-600',
-                        tablet: 'bg-purple-600',
-                        unknown: 'bg-gray-600'
-                      };
-                      return (
-                        <div key={device} className="flex items-center">
-                          <span className="w-16 text-sm text-gray-600 capitalize">{device}</span>
-                          <div className="flex-1 mx-4 bg-gray-200 rounded-full h-3">
-                            <div 
-                              className={`h-3 rounded-full transition-all duration-500 ${colors[device as keyof typeof colors] || colors.unknown}`}
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-gray-500 w-16 text-right">
-                            {Math.round(percentage)}% ({count})
-                          </span>
-                        </div>
-                      );
-                    })
-                  }
-                  {!analytics && (
-                    <div className="text-center text-gray-500 py-4">Loading device data...</div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Language Distribution */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Language Distribution</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {analytics && Object.entries(analytics.byLanguage)
-                  .sort(([,a], [,b]) => b - a)
-                  .slice(0, 8)
-                  .map(([language, count]) => {
-                    const percentage = (count / analytics.total) * 100;
-                    const languageNames: Record<string, string> = {
-                      en: 'English',
-                      es: 'Español',
-                      fr: 'Français',
-                      de: 'Deutsch',
-                      it: 'Italiano',
-                      pt: 'Português',
-                      zh: '中文',
-                      ja: '日本語',
-                      ko: '한국어',
-                      ar: 'العربية',
-                      hi: 'हिन्दी'
-                    };
-                    return (
-                      <div key={language} className="text-center p-3 bg-gray-50 rounded-lg">
-                        <div className="text-lg font-bold text-gray-900">{count}</div>
-                        <div className="text-sm text-gray-600">
-                          {languageNames[language] || language.toUpperCase()}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {Math.round(percentage)}%
-                        </div>
-                      </div>
-                    );
-                  })
-                }
-                {!analytics && (
-                  <div className="col-span-full text-center text-gray-500 py-4">Loading language data...</div>
-                )}
-              </div>
-            </div>
-
-            {/* Comment Types */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Comment Types</h3>
-              <div className="flex gap-8 justify-center">
-                {analytics && Object.entries(analytics.byType).map(([type, count]) => {
-                  const percentage = (count / analytics.total) * 100;
-                  return (
-                    <div key={type} className="text-center">
-                      <div className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold ${
-                        type === 'text' ? 'bg-blue-500' : 'bg-purple-500'
-                      }`}>
-                        {count}
-                      </div>
-                      <div className="mt-2 text-sm font-medium text-gray-900 capitalize">
-                        {type} Comments
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {Math.round(percentage)}%
-                      </div>
-                    </div>
-                  );
-                })}
-                {!analytics && (
-                  <div className="text-center text-gray-500 py-4">Loading comment type data...</div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'moderation' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Content Moderation
-              </h2>
-              <p className="text-gray-600">
-                Review and manage user-generated comments on the artwork.
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">All Comments</h3>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {comments.length} Total
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {comments.filter(c => c.approved).length} Approved
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      {comments.filter(c => !c.approved).length} Pending
-                    </span>
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="bg-white">
+                <CardTitle className="text-black">Usage Guidelines</CardTitle>
+                <CardDescription className="text-gray-600">Best practices for QR code deployment</CardDescription>
+              </CardHeader>
+              <CardContent className="bg-white">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Gallery Installation</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Use high-resolution QR codes (512px minimum)</li>
+                      <li>• Place codes at eye level (48-60 inches)</li>
+                      <li>• Ensure good lighting without glare</li>
+                      <li>• Include brief instructions for visitors</li>
+                      <li>• Test scanning from 2-3 feet distance</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-3">
+                    <h4 className="font-medium">Mobile Sharing</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Standard resolution (256px) works well</li>
+                      <li>• Include year information in QR code</li>
+                      <li>• Direct link to specific artwork panel</li>
+                      <li>• Optimized for mobile viewing experience</li>
+                      <li>• Trackable for engagement analytics</li>
+                    </ul>
                   </div>
                 </div>
-              </div>
-              
-              {loading ? (
-                <div className="px-6 py-8 text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                  <p className="text-gray-500 mt-2">Loading comments...</p>
-                </div>
-              ) : comments.length === 0 ? (
-                <div className="px-6 py-8 text-center text-gray-500">
-                  No comments found.
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="px-6 py-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-gray-900">
-                              {comment.userId || 'Anonymous'}
-                            </span>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-500">Year {comment.year}</span>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-500">
-                              {new Date(comment.timestamp).toLocaleString()}
-                            </span>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              comment.type === 'text' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                            }`}>
-                              {comment.type}
-                            </span>
-                          </div>
-                          {comment.text && (
-                            <p className="text-gray-700 mb-2">{comment.text}</p>
-                          )}
-                          {comment.imageData && (
-                            <div className="mb-2">
-                              <Image 
-                                src={comment.imageData} 
-                                alt="User drawing" 
-                                width={200}
-                                height={128}
-                                className="max-w-xs max-h-32 border rounded object-contain"
-                              />
-                            </div>
-                          )}
-                          <div className="text-xs text-gray-500">
-                            Device: {comment.metadata?.device} • 
-                            Input: {comment.metadata?.inputMethod}
-                            {comment.language && ` • Language: ${comment.language}`}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            comment.approved
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {comment.approved ? 'approved' : 'pending'}
-                          </span>
-                          <button
-                            onClick={() => handleDeleteComment(comment.id)}
-                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </main>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

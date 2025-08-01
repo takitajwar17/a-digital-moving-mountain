@@ -55,7 +55,7 @@ export async function addComment(commentInput: CommentInput): Promise<Comment> {
       year: commentInput.year,
       timestamp: serverTimestamp(),
       userId: generateUserId(),
-      approved: true, // Auto-approve for now
+      approved: false, // Comments start as pending for moderation
       color: normalizeColor(commentInput.color), // Normalize and validate color
       metadata: {
         device: commentInput.device,
@@ -268,6 +268,127 @@ function detectLanguage(text: string): string {
   }
 
   return 'en'; // Default to English
+}
+
+// Bulk operations for moderation
+export async function bulkUpdateComments(
+  commentIds: string[], 
+  action: 'approve' | 'reject' | 'delete'
+): Promise<{ success: string[], failed: string[] }> {
+  const results = { success: [] as string[], failed: [] as string[] };
+  
+  for (const commentId of commentIds) {
+    try {
+      if (action === 'delete') {
+        await deleteComment(commentId);
+      } else {
+        await updateCommentApproval(commentId, action === 'approve');
+      }
+      results.success.push(commentId);
+    } catch (error) {
+      console.error(`Failed to ${action} comment ${commentId}:`, error);
+      results.failed.push(commentId);
+    }
+  }
+  
+  return results;
+}
+
+// Search and filter comments
+export async function searchComments(options: {
+  searchTerm?: string;
+  status?: 'all' | 'approved' | 'pending';
+  year?: number;
+  limit?: number;
+}): Promise<Comment[]> {
+  try {
+    let q = query(collection(db, COLLECTION_NAME));
+    
+    // Apply status filter
+    if (options.status === 'approved') {
+      q = query(q, where('approved', '==', true));
+    } else if (options.status === 'pending') {
+      q = query(q, where('approved', '==', false));
+    }
+    
+    // Apply year filter
+    if (options.year) {
+      q = query(q, where('year', '==', options.year));
+    }
+    
+    // Order by timestamp
+    q = query(q, orderBy('timestamp', 'desc'));
+    
+    // Apply limit
+    if (options.limit) {
+      // Note: Firestore limit would require importing limit function
+      // For now, we'll limit after fetching
+    }
+    
+    const querySnapshot = await getDocs(q);
+    let comments = querySnapshot.docs.map(convertFirestoreDoc);
+    
+    // Apply text search filter (client-side for now)
+    if (options.searchTerm) {
+      const searchLower = options.searchTerm.toLowerCase();
+      comments = comments.filter(comment => 
+        comment.text?.toLowerCase().includes(searchLower) ||
+        comment.userId?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Apply limit after filtering
+    if (options.limit) {
+      comments = comments.slice(0, options.limit);
+    }
+    
+    return comments;
+  } catch (error) {
+    console.error('Error searching comments:', error);
+    throw new Error('Failed to search comments');
+  }
+}
+
+// Export comments data
+export async function exportComments(format: 'csv' | 'json' = 'csv'): Promise<string> {
+  try {
+    const comments = await getAllComments();
+    
+    if (format === 'json') {
+      return JSON.stringify(comments, null, 2);
+    }
+    
+    // CSV format
+    const headers = [
+      'ID', 'Text', 'Type', 'Year', 'Timestamp', 'Approved', 'Color',
+      'Language', 'Device', 'Input Method', 'Position X', 'Position Y'
+    ];
+    
+    const csvRows = [headers.join(',')];
+    
+    comments.forEach(comment => {
+      const row = [
+        comment.id,
+        `"${(comment.text || '').replace(/"/g, '""')}"`, // Escape quotes
+        comment.type,
+        comment.year,
+        new Date(comment.timestamp).toISOString(),
+        comment.approved,
+        comment.color || '',
+        comment.language || '',
+        comment.metadata?.device || '',
+        comment.metadata?.inputMethod || '',
+        comment.position.x,
+        comment.position.y
+      ];
+      csvRows.push(row.join(','));
+    });
+    
+    return csvRows.join('\n');
+  } catch (error) {
+    console.error('Error exporting comments:', error);
+    throw new Error('Failed to export comments');
+  }
 }
 
 // Get comment statistics

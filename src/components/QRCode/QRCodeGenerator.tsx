@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { generateAllPanelQRCodes, generatePrintableQRCodes } from '@/utils/qrCode';
 import QRCodeDisplay from './QRCodeDisplay';
@@ -21,9 +21,9 @@ export default function QRCodeGenerator({
   const [selectedYear, setSelectedYear] = useState<number>(years[0]);
   const [generating, setGenerating] = useState(false);
   const [generatedQRCodes, setGeneratedQRCodes] = useState<Record<number, string>>({});
-
+  
   // Generate QR codes for all years
-  const handleGenerateAll = async () => {
+  const handleGenerateAll = useCallback(async () => {
     try {
       setGenerating(true);
       const currentBaseURL = baseURL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
@@ -40,10 +40,10 @@ export default function QRCodeGenerator({
     } finally {
       setGenerating(false);
     }
-  };
+  }, [baseURL, years]);
 
   // Generate printable QR codes
-  const handleGeneratePrintable = async () => {
+  const handleGeneratePrintable = useCallback(async () => {
     try {
       setGenerating(true);
       const currentBaseURL = baseURL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
@@ -102,7 +102,26 @@ export default function QRCodeGenerator({
     } finally {
       setGenerating(false);
     }
-  };
+  }, [baseURL, years]);
+
+  // Listen for admin panel events
+  useEffect(() => {
+    const handleAdminGenerateAll = () => {
+      handleGenerateAll();
+    };
+    
+    const handleAdminGeneratePrintable = () => {
+      handleGeneratePrintable();
+    };
+    
+    window.addEventListener('generateAllQRCodes', handleAdminGenerateAll);
+    window.addEventListener('generatePrintableQRCodes', handleAdminGeneratePrintable);
+    
+    return () => {
+      window.removeEventListener('generateAllQRCodes', handleAdminGenerateAll);
+      window.removeEventListener('generatePrintableQRCodes', handleAdminGeneratePrintable);
+    };
+  }, [handleGenerateAll, handleGeneratePrintable]);
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -124,17 +143,31 @@ export default function QRCodeGenerator({
         <button
           onClick={handleGenerateAll}
           disabled={generating}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 text-sm flex items-center gap-2"
         >
-          {generating ? 'Generating...' : 'Generate All QR Codes'}
+          {generating ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Generating...
+            </>
+          ) : (
+            'Generate All QR Codes'
+          )}
         </button>
 
         <button
           onClick={handleGeneratePrintable}
           disabled={generating}
-          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 text-sm"
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 text-sm flex items-center gap-2"
         >
-          Generate Printable Version
+          {generating ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Processing...
+            </>
+          ) : (
+            'Generate Printable Version'
+          )}
         </button>
       </div>
 
