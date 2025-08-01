@@ -92,25 +92,24 @@ export default function CommentModal({
   // Embedded mode - render without Dialog wrapper
   if (embedded) {
     return (
-      <div className={cn("w-full bg-white rounded-xl border shadow-sm", className)}>
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+      <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col", className)}>
+        <div className="p-4 flex-1 flex flex-col">
+          <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-3">
             {/* Color Picker */}
             <ColorPicker
               selectedColor={selectedColor}
               onColorChange={setSelectedColor}
             />
             
-            <div className="space-y-2">
+            <div className="flex-1 flex flex-col space-y-2">
               <Textarea
                 ref={textareaRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
-                rows={6}
                 className={cn(
-                  "resize-none bg-white min-h-[150px]",
+                  "resize-none bg-white flex-1 min-h-[120px]",
                   isOverLimit && "border-destructive focus-visible:ring-destructive/20"
                 )}
                 maxLength={maxLength + 50}
@@ -129,7 +128,7 @@ export default function CommentModal({
           </form>
         </div>
         
-        <div className="flex justify-between px-6 pb-6">
+        <div className="flex justify-between px-4 pb-4 border-t pt-3">
           <Button
             type="button"
             variant="outline"
@@ -163,7 +162,7 @@ export default function CommentModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
-        className={cn("sm:max-w-md bg-white", className)}
+        className={cn("w-[600px] h-[400px] bg-white", className)}
         onPointerDownOutside={handleCancel}
         onEscapeKeyDown={handleCancel}
       >
@@ -188,9 +187,9 @@ export default function CommentModal({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              rows={6}
+              rows={4}
               className={cn(
-                "resize-none bg-white min-h-[150px]",
+                "resize-none bg-white min-h-[120px]",
                 isOverLimit && "border-destructive focus-visible:ring-destructive/20"
               )}
               maxLength={maxLength + 50}

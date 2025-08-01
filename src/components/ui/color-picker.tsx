@@ -12,12 +12,8 @@ interface ColorPickerProps {
 
 const COLORS = [
   { name: 'Black', value: '#000000' },
-  { name: 'Red', value: '#ef4444' },
-  { name: 'Blue', value: '#3b82f6' },
-  { name: 'Green', value: '#22c55e' },
   { name: 'Gray', value: '#6b7280' },
-  { name: 'Purple', value: '#a855f7' },
-  { name: 'Orange', value: '#f97316' },
+  { name: 'White', value: '#ffffff' },
 ];
 
 export function ColorPicker({ selectedColor, onColorChange, className }: ColorPickerProps) {

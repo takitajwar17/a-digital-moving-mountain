@@ -38,12 +38,12 @@ export default function CommentModeSelector({
 
   return (
     <div 
-      className={cn("w-full max-w-md bg-white rounded-xl border shadow-lg", className)}
+      className={cn("w-[600px] h-[400px] bg-white rounded-xl border shadow-lg", className)}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
     >
-      <div className="p-6 pb-4">
+      <div className="p-4 pb-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold leading-none">Add Comment</h2>
           <Button
@@ -56,9 +56,9 @@ export default function CommentModeSelector({
         </div>
       </div>
 
-      <div className="px-6 space-y-4">
-        <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')}>
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+      <div className="px-4 pb-4 flex-1 flex flex-col">
+        <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')} className="h-full flex flex-col">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-3">
             <TabsTrigger value="text" className="flex items-center gap-2 bg-white data-[state=active]:bg-white">
               <MessageSquare className="h-4 w-4" />
               Text
@@ -69,20 +69,20 @@ export default function CommentModeSelector({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="text" className="mt-4">
+          <TabsContent value="text" className="mt-0 flex-1">
             <CommentModal
               onSubmit={handleTextSubmit}
               onCancel={onCancel}
-              className="border-none shadow-none bg-transparent"
+              className="border-none shadow-none bg-transparent h-full"
               embedded={true}
             />
           </TabsContent>
 
-          <TabsContent value="drawing" className="mt-4">
+          <TabsContent value="drawing" className="mt-0 flex-1">
             <DrawingCanvas
               onSave={handleDrawingSubmit}
               onCancel={onCancel}
-              className="border-none shadow-none bg-transparent"
+              className="border-none shadow-none bg-transparent h-full"
             />
           </TabsContent>
         </Tabs>

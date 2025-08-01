@@ -25,9 +25,9 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set consistent canvas size
-    canvas.width = 300;
-    canvas.height = 180;
+    // Set consistent canvas size with better landscape proportions
+    canvas.width = 420;
+    canvas.height = 160;
 
     // Set drawing style - check for mobile viewport
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -119,22 +119,21 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
   };
 
   return (
-    <div className={cn("w-full bg-white rounded-xl border shadow-sm", className)}>
-      <div className="p-6 space-y-4">
+    <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col", className)}>
+      <div className="p-4 flex-1 flex flex-col space-y-3">
         {/* Color Picker */}
         <ColorPicker
           selectedColor={selectedColor}
           onColorChange={setSelectedColor}
-          className="pb-2"
         />
 
         {/* Canvas Section */}
-        <div className="space-y-2">
-          <div className="flex justify-center">
+        <div className="flex-1 flex flex-col space-y-2">
+          <div className="flex-1 flex items-center justify-center">
             <canvas
               ref={canvasRef}
               className="border border-border rounded-md cursor-crosshair touch-none bg-white"
-              style={{ touchAction: 'none', width: '100%', maxWidth: '300px', height: '180px' }}
+              style={{ touchAction: 'none', width: '420px', height: '160px' }}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -157,7 +156,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         </div>
       </div>
       
-      <div className="flex justify-between px-6 pb-6">
+      <div className="flex justify-between px-4 pb-4 border-t pt-3">
         <Button
           type="button"
           variant="outline"
