@@ -16,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Comment, CommentInput } from '@/types/comment';
+// @ts-ignore - bad-words has mixed module types
 import Filter from 'bad-words';
 
 const COLLECTION_NAME = 'comments';
