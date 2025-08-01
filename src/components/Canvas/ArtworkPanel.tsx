@@ -209,12 +209,12 @@ export default function ArtworkPanel({
   const shouldShowLoading = !imageLoaded && !imageError;
 
   return (
-    <div className={`relative overflow-hidden bg-black ${className}`} style={{ width: 'fit-content' }}>
+    <div className={`relative overflow-hidden bg-black flex items-center justify-center ${className}`}>
 
       {/* Canvas Container */}
       <div
         ref={canvasRef}
-        className="relative h-full cursor-grab active:cursor-grabbing flex items-center justify-center"
+        className="relative cursor-grab active:cursor-grabbing flex items-center justify-center"
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -223,7 +223,6 @@ export default function ArtworkPanel({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ width: 'fit-content' }}
       >
         {/* Artwork Image */}
         <div
@@ -248,9 +247,10 @@ export default function ArtworkPanel({
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
             style={{
-              maxWidth: 'none',
-              height: '100vh',
+              maxWidth: '100vw',
+              maxHeight: '100vh',
               width: 'auto',
+              height: 'auto',
               objectFit: 'contain',
             }}
           />
@@ -299,16 +299,6 @@ export default function ArtworkPanel({
         </div>
       )}
 
-      {/* Zoom Controls at bottom left */}
-      {imageLoaded && (
-        <div className="absolute bottom-4 left-4 z-10">
-          <ZoomControls
-            zoomLevel={zoomLevel}
-            onZoomChange={handleZoomChange}
-            onReset={handleResetView}
-          />
-        </div>
-      )}
 
     </div>
   );
