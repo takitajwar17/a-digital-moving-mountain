@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import CommentInput from '@/components/Input/CommentInput';
+import CommentModal from '@/components/Input/CommentModal';
 import DrawingCanvas from '@/components/Drawing/DrawingCanvas';
 
 interface CommentModeSelectorProps {
@@ -53,10 +53,11 @@ export default function CommentModeSelector({
             </svg>
           </button>
         </div>
-        <CommentInput
+        <CommentModal
           onSubmit={handleTextSubmit}
           onCancel={onCancel}
           className="bg-transparent shadow-none p-0"
+          embedded={true}
         />
       </div>
     );
