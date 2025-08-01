@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Comment } from '@/types/comment';
 import CommentModeSelector from '../Comments/CommentModeSelector';
 
@@ -123,10 +124,13 @@ export default function CommentOverlay({
                 className="rounded-lg p-1 border-2"
                 style={{ borderColor: comment.color || '#000000' }}
               >
-                <img 
+                <Image 
                   src={comment.imageData} 
                   alt="User drawing" 
+                  width={96}
+                  height={96}
                   className="max-w-24 max-h-24 md:max-w-20 md:max-h-20 rounded drop-shadow-lg"
+                  unoptimized={true}
                 />
               </div>
             </div>

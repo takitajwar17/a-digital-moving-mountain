@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { useComments } from '@/hooks/useComments';
 import { useCanvas } from '@/hooks/useCanvas';
 import { useImagePreloader, usePreloadStats } from '@/hooks/useImagePreloader';
@@ -244,11 +245,13 @@ export default function Home() {
         <div className="flex-1 flex items-center justify-center relative">
           {prevPanel && (
             <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToPrevious}>
-              <img
+              <Image
                 src={prevPanel.imageUrl}
                 alt={`Artwork ${prevPanel.year}`}
+                width={800}
+                height={600}
                 className="max-h-[80vh] max-w-full object-contain opacity-30 hover:opacity-50 transition-opacity"
-                loading="lazy"
+                priority={false}
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
@@ -308,11 +311,13 @@ export default function Home() {
         <div className="flex-1 flex items-center justify-center relative">
           {nextPanel && (
             <div className="relative cursor-pointer transition-all duration-300 hover:opacity-60" onClick={goToNext}>
-              <img
+              <Image
                 src={nextPanel.imageUrl}
                 alt={`Artwork ${nextPanel.year}`}
+                width={800}
+                height={600}
                 className="max-h-[80vh] max-w-full object-contain opacity-30 hover:opacity-50 transition-opacity"
-                loading="lazy"
+                priority={false}
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
