@@ -19,24 +19,24 @@ import { Comment, CommentInput } from '@/types/comment';
 
 const COLLECTION_NAME = 'comments';
 
-// Initialize profanity filter lazily
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let profanityFilter: any = null;
-
-async function initProfanityFilter() {
-  if (!profanityFilter) {
-    // @ts-expect-error - leo-profanity has no type definitions
-    profanityFilter = await import('leo-profanity');
-    profanityFilter.loadDictionary('en');
-  }
-  return profanityFilter;
-}
+// Initialize profanity filter
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+const leoProfanity: any = require('leo-profanity');
+leoProfanity.loadDictionary('en');
 
 // Check if comment contains profanity
-async function containsProfanity(text: string): Promise<boolean> {
+function containsProfanity(text: string): boolean {
   if (!text || text.trim() === '') return false;
-  const filter = await initProfanityFilter();
-  return filter.check(text);
+  
+  try {
+    const result = leoProfanity.check(text);
+    console.log(`🔍 Profanity check for "${text}": ${result}`);
+    return result;
+  } catch (error) {
+    console.error('Error in profanity check:', error);
+    // If profanity check fails, default to pending for safety
+    return true;
+  }
 }
 
 // Convert Firestore document to Comment type
@@ -67,7 +67,7 @@ export async function addComment(commentInput: CommentInput): Promise<Comment & 
     console.log('📝 Adding comment to Firebase:', commentInput);
     
     // Check for profanity in text comments
-    const hasProfanity = commentInput.text ? await containsProfanity(commentInput.text) : false;
+    const hasProfanity = commentInput.text ? containsProfanity(commentInput.text) : false;
     const isAutoApproved = !hasProfanity;
     
     const commentData = {
