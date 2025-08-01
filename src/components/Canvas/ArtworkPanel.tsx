@@ -9,7 +9,7 @@ import CommentOverlay from './CommentOverlay';
 interface ArtworkPanelProps {
   panel: ArtworkPanelType;
   comments: Comment[];
-  onCommentAdd: (position: { x: number; y: number }, text?: string, imageData?: string) => void;
+  onCommentAdd: (position: { x: number; y: number }, text?: string, imageData?: string, color?: string) => void;
   onCommentClick: (comment: Comment) => void;
   zoomLevel: number;
   onZoomChange?: (zoom: number) => void;
@@ -154,18 +154,18 @@ export default function ArtworkPanel({
   };
 
   // Handle comment submission
-  const handleCommentSubmit = (text: string) => {
+  const handleCommentSubmit = (text: string, color: string) => {
     if (commentPosition) {
-      onCommentAdd(commentPosition, text, undefined);
+      onCommentAdd(commentPosition, text, undefined, color);
       setIsAddingComment(false);
       setCommentPosition(null);
     }
   };
 
   // Handle drawing submission
-  const handleDrawingSubmit = (imageData: string, text?: string) => {
+  const handleDrawingSubmit = (imageData: string, color: string) => {
     if (commentPosition) {
-      onCommentAdd(commentPosition, text, imageData);
+      onCommentAdd(commentPosition, undefined, imageData, color);
       setIsAddingComment(false);
       setCommentPosition(null);
     }

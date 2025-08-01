@@ -12,10 +12,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { ColorPicker } from '@/components/ui/color-picker';
 import { cn } from '@/lib/utils';
 
 interface CommentInputProps {
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, color: string) => void;
   onCancel: () => void;
   placeholder?: string;
   maxLength?: number;
@@ -32,6 +33,7 @@ export default function CommentModal({
   embedded = false
 }: CommentInputProps) {
   const [text, setText] = useState('');
+  const [selectedColor, setSelectedColor] = useState('#000000');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -52,8 +54,9 @@ export default function CommentModal({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(text.trim());
+      await onSubmit(text.trim(), selectedColor);
       setText('');
+      setSelectedColor('#000000');
       if (!embedded) {
         setIsOpen(false);
       }
@@ -92,6 +95,12 @@ export default function CommentModal({
       <div className={cn("w-full bg-white rounded-xl border shadow-sm", className)}>
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Color Picker */}
+            <ColorPicker
+              selectedColor={selectedColor}
+              onColorChange={setSelectedColor}
+            />
+            
             <div className="space-y-2">
               <Textarea
                 ref={textareaRef}
@@ -166,6 +175,12 @@ export default function CommentModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Color Picker */}
+          <ColorPicker
+            selectedColor={selectedColor}
+            onColorChange={setSelectedColor}
+          />
+          
           <div className="space-y-2">
             <Textarea
               ref={textareaRef}

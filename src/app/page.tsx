@@ -93,7 +93,7 @@ export default function Home() {
   }, []);
 
   // Handle comment addition
-  const handleCommentAdd = async (position: { x: number; y: number }, text?: string, imageData?: string) => {
+  const handleCommentAdd = async (position: { x: number; y: number }, text?: string, imageData?: string, color?: string) => {
     try {
       // Find suitable position to avoid collisions
       const availablePosition = findAvailablePosition(
@@ -109,7 +109,8 @@ export default function Home() {
         position: availablePosition,
         year: currentYear,
         device: deviceType,
-        inputMethod: imageData ? 'stylus' : (deviceType === 'mobile' ? 'touch' : 'keyboard')
+        inputMethod: imageData ? 'stylus' : (deviceType === 'mobile' ? 'touch' : 'keyboard'),
+        color: color || '#000000' // Default to black if no color provided
       });
     } catch (error) {
       console.error('Failed to add comment:', error);

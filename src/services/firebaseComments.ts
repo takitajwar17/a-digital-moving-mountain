@@ -36,6 +36,7 @@ function convertFirestoreDoc(doc: DocumentSnapshot<DocumentData>): Comment {
     timestamp: data.timestamp instanceof Timestamp ? data.timestamp.toMillis() : data.timestamp,
     userId: data.userId,
     approved: data.approved,
+    color: normalizeColor(data.color), // Normalize color with backward compatibility
     metadata: data.metadata
   };
 }
@@ -55,6 +56,7 @@ export async function addComment(commentInput: CommentInput): Promise<Comment> {
       timestamp: serverTimestamp(),
       userId: generateUserId(),
       approved: true, // Auto-approve for now
+      color: normalizeColor(commentInput.color), // Normalize and validate color
       metadata: {
         device: commentInput.device,
         inputMethod: commentInput.inputMethod,
@@ -75,6 +77,7 @@ export async function addComment(commentInput: CommentInput): Promise<Comment> {
       ...commentData,
       timestamp: Date.now(),
       language: commentData.language || undefined,
+      color: commentData.color, // Include color in returned comment
       metadata: {
         ...commentData.metadata,
         createdAt: Date.now()
@@ -192,6 +195,49 @@ export async function deleteComment(commentId: string): Promise<void> {
 // Utility functions
 function generateUserId(): string {
   return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Validate and normalize color input
+function normalizeColor(color?: string): string {
+  if (!color) return '#000000'; // Default to black
+  
+  // Remove whitespace and convert to lowercase
+  const cleanColor = color.trim().toLowerCase();
+  
+  // If it's a named color, convert to hex
+  const namedColors: Record<string, string> = {
+    'black': '#000000',
+    'white': '#ffffff',
+    'red': '#ff0000',
+    'green': '#008000',
+    'blue': '#0000ff',
+    'yellow': '#ffff00',
+    'orange': '#ffa500',
+    'purple': '#800080',
+    'pink': '#ffc0cb',
+    'brown': '#a52a2a',
+    'gray': '#808080',
+    'grey': '#808080'
+  };
+  
+  if (namedColors[cleanColor]) {
+    return namedColors[cleanColor];
+  }
+  
+  // If it's already a hex color, validate and return
+  if (/^#[0-9a-f]{6}$/i.test(cleanColor)) {
+    return cleanColor;
+  }
+  
+  // If it's a 3-digit hex, expand to 6 digits
+  if (/^#[0-9a-f]{3}$/i.test(cleanColor)) {
+    const [, r, g, b] = cleanColor;
+    return `#${r}${r}${g}${g}${b}${b}`;
+  }
+  
+  // If invalid, return default black
+  console.warn(`Invalid color provided: ${color}. Using default black.`);
+  return '#000000';
 }
 
 function generateSessionId(): string {

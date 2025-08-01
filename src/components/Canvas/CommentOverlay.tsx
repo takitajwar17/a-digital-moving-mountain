@@ -10,8 +10,8 @@ interface CommentOverlayProps {
   panelDimensions: { width: number; height: number };
   isAddingComment: boolean;
   commentPosition: { x: number; y: number } | null;
-  onCommentSubmit: (text: string) => void;
-  onDrawingSubmit: (imageData: string, text?: string) => void;
+  onCommentSubmit: (text: string, color: string) => void;
+  onDrawingSubmit: (imageData: string, color: string) => void;
   onCommentCancel: () => void;
 }
 
@@ -106,7 +106,12 @@ export default function CommentOverlay({
               onClick={() => onCommentClick(comment)}
               onTouchStart={() => onCommentClick(comment)}
             >
-              <p className="text-base md:text-sm text-black leading-relaxed font-medium drop-shadow-lg">{comment.text}</p>
+              <p 
+                className="text-base md:text-sm leading-relaxed font-medium drop-shadow-lg"
+                style={{ color: comment.color || '#000000' }}
+              >
+                {comment.text}
+              </p>
             </div>
           ) : (
             <div 
@@ -114,11 +119,16 @@ export default function CommentOverlay({
               onClick={() => onCommentClick(comment)}
               onTouchStart={() => onCommentClick(comment)}
             >
-              <img 
-                src={comment.imageData} 
-                alt="User drawing" 
-                className="max-w-24 max-h-24 md:max-w-20 md:max-h-20 rounded drop-shadow-lg"
-              />
+              <div 
+                className="rounded-lg p-1 border-2"
+                style={{ borderColor: comment.color || '#000000' }}
+              >
+                <img 
+                  src={comment.imageData} 
+                  alt="User drawing" 
+                  className="max-w-24 max-h-24 md:max-w-20 md:max-h-20 rounded drop-shadow-lg"
+                />
+              </div>
             </div>
           )}
         </div>

@@ -14,8 +14,8 @@ import DrawingCanvas from '@/components/Drawing/DrawingCanvas';
 import { cn } from '@/lib/utils';
 
 interface CommentModeSelectorProps {
-  onSubmitText: (text: string) => void;
-  onSubmitDrawing: (imageData: string, text?: string) => void;
+  onSubmitText: (text: string, color: string) => void;
+  onSubmitDrawing: (imageData: string, color: string) => void;
   onCancel: () => void;
   className?: string;
 }
@@ -28,12 +28,12 @@ export default function CommentModeSelector({
 }: CommentModeSelectorProps) {
   const [mode, setMode] = useState<'text' | 'drawing'>('text');
 
-  const handleTextSubmit = (text: string) => {
-    onSubmitText(text);
+  const handleTextSubmit = (text: string, color: string) => {
+    onSubmitText(text, color);
   };
 
-  const handleDrawingSubmit = (imageData: string, text?: string) => {
-    onSubmitDrawing(imageData, text);
+  const handleDrawingSubmit = (imageData: string, color: string) => {
+    onSubmitDrawing(imageData, color);
   };
 
   return (

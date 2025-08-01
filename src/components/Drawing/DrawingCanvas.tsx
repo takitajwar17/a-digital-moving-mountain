@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { RotateCcw, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { ColorPicker } from '@/components/ui/color-picker';
 import { cn } from '@/lib/utils';
 
 interface DrawingCanvasProps {
-  onSave: (imageData: string, text?: string) => void;
+  onSave: (imageData: string, color: string) => void;
   onCancel: () => void;
   className?: string;
 }
@@ -16,7 +16,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasDrawn, setHasDrawn] = useState(false);
-  const [text, setText] = useState('');
+  const [selectedColor, setSelectedColor] = useState('#000000');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,11 +34,11 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     ctx.lineWidth = isMobile ? 3 : 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#000000';
+    ctx.strokeStyle = selectedColor;
 
     // Fill with transparent background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }, []);
+  }, [selectedColor]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault();
@@ -48,6 +48,9 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
 
+    // Update stroke style to current selected color
+    ctx.strokeStyle = selectedColor;
+    
     setIsDrawing(true);
     setHasDrawn(true);
 
@@ -112,12 +115,19 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
     // Convert canvas to PNG data URL
     const imageData = canvas.toDataURL('image/png');
-    onSave(imageData, text.trim() || undefined);
+    onSave(imageData, selectedColor);
   };
 
   return (
     <div className={cn("w-full bg-white rounded-xl border shadow-sm", className)}>
       <div className="p-6 space-y-4">
+        {/* Color Picker */}
+        <ColorPicker
+          selectedColor={selectedColor}
+          onColorChange={setSelectedColor}
+          className="pb-2"
+        />
+
         {/* Canvas Section */}
         <div className="space-y-2">
           <div className="flex justify-center">
@@ -143,28 +153,6 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
               <RotateCcw className="h-4 w-4 mr-2" />
               Clear Drawing
             </Button>
-          </div>
-        </div>
-
-        {/* Text Section - matching CommentModal */}
-        <div className="space-y-2">
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Add a text description (optional)..."
-            rows={3}
-            className="resize-none bg-white min-h-[80px]"
-            maxLength={280}
-          />
-          
-          {/* Character count */}
-          <div className="flex justify-end text-xs text-muted-foreground">
-            <span className={cn(
-              text.length > 260 ? "text-destructive" : 
-              text.length > 240 ? "text-yellow-600" : "text-muted-foreground"
-            )}>
-              {text.length}/280
-            </span>
           </div>
         </div>
       </div>
