@@ -39,6 +39,7 @@ export default function ArtworkPanel({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [commentPosition, setCommentPosition] = useState<{ x: number; y: number } | null>(null);
+  const [clickScreenPosition, setClickScreenPosition] = useState<{ x: number; y: number } | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
@@ -79,6 +80,7 @@ export default function ArtworkPanel({
 
     if (relativeX >= 0 && relativeX <= 1 && relativeY >= 0 && relativeY <= 1) {
       setCommentPosition({ x: relativeX, y: relativeY });
+      setClickScreenPosition({ x: clientX, y: clientY });
       setIsAddingComment(true);
     }
   };
@@ -174,6 +176,7 @@ export default function ArtworkPanel({
   const handleCommentCancel = () => {
     setIsAddingComment(false);
     setCommentPosition(null);
+    setClickScreenPosition(null);
   };
 
   // Handle image load
@@ -289,6 +292,7 @@ export default function ArtworkPanel({
               panelDimensions={panel.dimensions}
               isAddingComment={isAddingComment}
               commentPosition={commentPosition}
+              clickScreenPosition={clickScreenPosition}
               onCommentSubmit={handleCommentSubmit}
               onDrawingSubmit={handleDrawingSubmit}
               onCommentCancel={handleCommentCancel}

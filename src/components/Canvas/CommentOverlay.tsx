@@ -11,6 +11,7 @@ interface CommentOverlayProps {
   panelDimensions: { width: number; height: number };
   isAddingComment: boolean;
   commentPosition: { x: number; y: number } | null;
+  clickScreenPosition?: { x: number; y: number } | null;
   onCommentSubmit: (text: string, color: string) => void;
   onDrawingSubmit: (imageData: string, color: string) => void;
   onCommentCancel: () => void;
@@ -19,60 +20,60 @@ interface CommentOverlayProps {
 // Smart positioning to avoid edge cutoffs
 function getModalTransform(
   position: { x: number; y: number },
-  panelDimensions: { width: number; height: number }
+  panelDimensions: { width: number; height: number },
+  clickPosition?: { x: number; y: number }
 ): { transform: string; position: 'fixed' | 'absolute'; fixedStyles?: React.CSSProperties } {
-  const modalWidth = 320; // approximate modal width
-  const modalHeight = 400; // increased for mobile touch targets
+  const modalWidth = 400; // actual modal width
+  const modalHeight = 300; // actual modal height
   
-  // Check if we're on mobile (screen width < 768px)
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
-  if (isMobile) {
-    // On mobile, use fixed positioning in the center of the viewport
+  // Always use fixed positioning to escape container constraints
+  if (typeof window !== 'undefined' && clickPosition) {
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let left = clickPosition.x;
+    let top = clickPosition.y;
+    
+    // Adjust horizontal position to keep modal within viewport
+    if (left + modalWidth / 2 > windowWidth) {
+      left = windowWidth - modalWidth / 2 - 20; // 20px margin
+    }
+    if (left - modalWidth / 2 < 0) {
+      left = modalWidth / 2 + 20; // 20px margin
+    }
+    
+    // Adjust vertical position to keep modal within viewport
+    if (top + modalHeight / 2 > windowHeight) {
+      top = windowHeight - modalHeight / 2 - 20; // 20px margin
+    }
+    if (top - modalHeight / 2 < 0) {
+      top = modalHeight / 2 + 20; // 20px margin
+    }
+    
     return {
       position: 'fixed',
       transform: 'translate(-50%, -50%)',
       fixedStyles: {
-        top: '50vh',
-        left: '50vw',
-        width: '90vw',
-        maxWidth: '400px',
-        maxHeight: '85vh',
-        zIndex: 1000,
+        top: `${top}px`,
+        left: `${left}px`,
+        zIndex: 9999,
         margin: 0,
-        padding: 0,
-        touchAction: 'none',
-        transformOrigin: 'center center'
+        padding: 0
       }
     };
   }
   
-  let transformX = '-50%';
-  let transformY = '-50%';
-  
-  // Check if modal would go off the right edge
-  if (position.x * panelDimensions.width + modalWidth / 2 > panelDimensions.width) {
-    transformX = '-100%';
-  }
-  
-  // Check if modal would go off the left edge
-  if (position.x * panelDimensions.width - modalWidth / 2 < 0) {
-    transformX = '0%';
-  }
-  
-  // Check if modal would go off the bottom edge
-  if (position.y * panelDimensions.height + modalHeight / 2 > panelDimensions.height) {
-    transformY = '-100%';
-  }
-  
-  // Check if modal would go off the top edge
-  if (position.y * panelDimensions.height - modalHeight / 2 < 0) {
-    transformY = '0%';
-  }
-  
+  // Fallback for mobile or when no click position
   return {
-    transform: `translate(${transformX}, ${transformY})`,
-    position: 'absolute'
+    position: 'fixed',
+    transform: 'translate(-50%, -50%)',
+    fixedStyles: {
+      top: '50vh',
+      left: '50vw',
+      zIndex: 9999,
+      margin: 0,
+      padding: 0
+    }
   };
 }
 
@@ -82,6 +83,7 @@ export default function CommentOverlay({
   panelDimensions,
   isAddingComment,
   commentPosition,
+  clickScreenPosition,
   onCommentSubmit,
   onDrawingSubmit,
   onCommentCancel
@@ -139,7 +141,7 @@ export default function CommentOverlay({
 
       {/* New Comment Input */}
       {isAddingComment && commentPosition && (() => {
-        const positioning = getModalTransform(commentPosition, panelDimensions);
+        const positioning = getModalTransform(commentPosition, panelDimensions, clickScreenPosition || undefined);
         const isMobile = positioning.position === 'fixed';
         
         return (
