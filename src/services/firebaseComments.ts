@@ -16,6 +16,13 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Comment, CommentInput } from '@/types/comment';
+
+// Type declaration for leo-profanity
+declare module 'leo-profanity' {
+  export function check(text: string): boolean;
+  export function loadDictionary(language: string): void;
+}
+
 import * as leoProfanity from 'leo-profanity';
 
 const COLLECTION_NAME = 'comments';
