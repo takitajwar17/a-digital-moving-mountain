@@ -250,7 +250,7 @@ export default function Home() {
                 : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
             }`}
           >
-            {nextPanel ? nextPanel.year : 'Next'} →
+            {nextPanel ? nextPanel.year : 'Next'} 
           </button>
         </div>
       </div>
@@ -337,7 +337,7 @@ export default function Home() {
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
-                  {nextPanel.year} →
+                  {nextPanel.year} 
                 </div>
               </div>
             </div>
