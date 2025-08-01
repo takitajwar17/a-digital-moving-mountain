@@ -268,8 +268,33 @@ export default function Home() {
         </div>
 
         {/* Main content area with image */}
-        <div className="h-full flex items-center justify-center relative">
-          {/* Left navigation arrow */}
+        <div className="h-full w-full flex items-center justify-center relative">
+          {/* Image container with animation - full width */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div 
+              className={`relative transition-transform duration-300 ease-in-out w-full h-full flex items-center justify-center ${
+                isAnimating && animationDirection === 'left' ? '-translate-x-full' :
+                isAnimating && animationDirection === 'right' ? 'translate-x-full' :
+                'translate-x-0'
+              }`}
+            >
+              <ArtworkPanel
+                panel={currentPanel}
+                comments={panelComments}
+                onCommentAdd={handleCommentAdd}
+                onCommentClick={handleCommentClick}
+                zoomLevel={settings.zoomLevel}
+                onZoomChange={updateZoom}
+                panPosition={settings.panPosition}
+                onPanChange={updatePan}
+                onSwipeLeft={goToNext}
+                onSwipeRight={goToPrevious}
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+
+          {/* Left navigation arrow - over the image */}
           <button
             onClick={goToPrevious}
             disabled={!prevPanel || isAnimating}
@@ -284,34 +309,7 @@ export default function Home() {
             </svg>
           </button>
 
-          {/* Image container with animation */}
-          <div className="w-full h-full flex items-center justify-center px-16">
-            <div 
-              className={`relative transition-transform duration-300 ease-in-out w-full h-full flex items-center justify-center ${
-                isAnimating && animationDirection === 'left' ? '-translate-x-full' :
-                isAnimating && animationDirection === 'right' ? 'translate-x-full' :
-                'translate-x-0'
-              }`}
-            >
-              <div className="relative" style={{ maxWidth: '100%', maxHeight: '100%' }}>
-                <ArtworkPanel
-                  panel={currentPanel}
-                  comments={panelComments}
-                  onCommentAdd={handleCommentAdd}
-                  onCommentClick={handleCommentClick}
-                  zoomLevel={settings.zoomLevel}
-                  onZoomChange={updateZoom}
-                  panPosition={settings.panPosition}
-                  onPanChange={updatePan}
-                  onSwipeLeft={goToNext}
-                  onSwipeRight={goToPrevious}
-                  className="w-auto h-auto"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Right navigation arrow */}
+          {/* Right navigation arrow - over the image */}
           <button
             onClick={goToNext}
             disabled={!nextPanel || isAnimating}

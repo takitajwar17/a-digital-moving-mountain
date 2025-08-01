@@ -32,6 +32,9 @@ export default function DrawingCanvas({
   
   // Use external color if provided, otherwise use internal
   const selectedColor = externalSelectedColor || internalSelectedColor;
+  
+  // Check if white is selected for dark background
+  const isWhiteSelected = selectedColor.toLowerCase() === '#ffffff' || selectedColor.toLowerCase() === 'white';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -159,7 +162,10 @@ export default function DrawingCanvas({
       <div className={cn("w-full h-full flex items-center justify-center relative", className)}>
         <canvas
           ref={canvasRef}
-          className="border border-gray-200 rounded-lg cursor-crosshair touch-none bg-white"
+          className={cn(
+            "border border-gray-200 rounded-lg cursor-crosshair touch-none",
+            isWhiteSelected ? "bg-gray-800" : "bg-white"
+          )}
           style={{ 
             touchAction: 'none', 
             width: '360px', 
@@ -205,7 +211,10 @@ export default function DrawingCanvas({
           <div className="flex-1 flex items-center justify-center min-h-0">
             <canvas
               ref={canvasRef}
-              className="border border-border rounded-md cursor-crosshair touch-none bg-white"
+              className={cn(
+                "border border-border rounded-md cursor-crosshair touch-none",
+                isWhiteSelected ? "bg-gray-800" : "bg-white"
+              )}
               style={{ touchAction: 'none', width: '210px', height: '80px' }}
               onMouseDown={startDrawing}
               onMouseMove={draw}

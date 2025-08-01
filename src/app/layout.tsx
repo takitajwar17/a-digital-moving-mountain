@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Titillium_Web } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -47,6 +48,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${titilliumWeb.variable} antialiased`}
       >
         {children}
+        <Toaster position="top-center" />
         <Analytics />
         <script
           dangerouslySetInnerHTML={{
