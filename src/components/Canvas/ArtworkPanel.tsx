@@ -209,12 +209,12 @@ export default function ArtworkPanel({
   const shouldShowLoading = !imageLoaded && !imageError;
 
   return (
-    <div className={`relative overflow-hidden bg-black flex items-center justify-center ${className}`}>
+    <div className={`relative overflow-hidden bg-black ${className}`} style={{ width: 'fit-content' }}>
 
       {/* Canvas Container */}
       <div
         ref={canvasRef}
-        className="relative cursor-grab active:cursor-grabbing flex items-center justify-center"
+        className="relative h-full cursor-grab active:cursor-grabbing flex items-center justify-center"
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -223,6 +223,7 @@ export default function ArtworkPanel({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        style={{ width: 'fit-content' }}
       >
         {/* Artwork Image */}
         <div
@@ -247,9 +248,9 @@ export default function ArtworkPanel({
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
             style={{
-              width: '100vw',
-              maxHeight: '100vh',
-              height: 'auto',
+              maxWidth: 'none',
+              height: '100vh',
+              width: 'auto',
               objectFit: 'contain',
             }}
           />
