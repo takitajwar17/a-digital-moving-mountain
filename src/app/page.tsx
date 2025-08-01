@@ -89,6 +89,41 @@ export default function Home() {
 
   const preloadStats = usePreloadStats(preloadedImages);
 
+  // Get previous and next panels
+  const currentIndex = availableYears.indexOf(currentYear);
+  const prevYear = currentIndex > 0 ? availableYears[currentIndex - 1] : null;
+  const nextYear = currentIndex < availableYears.length - 1 ? availableYears[currentIndex + 1] : null;
+  const prevPanel = prevYear ? sampleArtworkPanels.find(p => p.year === prevYear) : null;
+  const nextPanel = nextYear ? sampleArtworkPanels.find(p => p.year === nextYear) : null;
+
+  // Handle year navigation with animation
+  const handleYearChange = (year: number) => {
+    if (isAnimating || year === currentYear) return;
+    
+    const currentIdx = availableYears.indexOf(currentYear);
+    const newIdx = availableYears.indexOf(year);
+    
+    setAnimationDirection(newIdx > currentIdx ? 'left' : 'right');
+    setIsAnimating(true);
+    
+    setTimeout(() => {
+      setCurrentYear(year);
+      setTimeout(() => {
+        setIsAnimating(false);
+        setAnimationDirection(null);
+      }, 50);
+    }, 300);
+  };
+
+  // Navigation handlers
+  const goToPrevious = () => {
+    if (prevYear) handleYearChange(prevYear);
+  };
+  
+  const goToNext = () => {
+    if (nextYear) handleYearChange(nextYear);
+  };
+
   // Initialize device detection
   useEffect(() => {
     setDeviceType(getDeviceType());
@@ -154,7 +189,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentYear, availableYears, goToPrevious, goToNext, handleYearChange]);
+  }, [currentYear, availableYears, prevYear, nextYear, isAnimating]);
 
   // Handle comment addition
   const handleCommentAdd = async (position: { x: number; y: number }, text?: string, imageData?: string, color?: string) => {
@@ -187,26 +222,6 @@ export default function Home() {
     // TODO: Show comment details modal
   };
 
-
-  // Handle year navigation with animation
-  const handleYearChange = (year: number) => {
-    if (isAnimating || year === currentYear) return;
-    
-    const currentIndex = availableYears.indexOf(currentYear);
-    const newIndex = availableYears.indexOf(year);
-    
-    setAnimationDirection(newIndex > currentIndex ? 'left' : 'right');
-    setIsAnimating(true);
-    
-    setTimeout(() => {
-      setCurrentYear(year);
-      setTimeout(() => {
-        setIsAnimating(false);
-        setAnimationDirection(null);
-      }, 50);
-    }, 300);
-  };
-
   // Show loading screen only if current image is loading and no images are loaded yet
   const currentImageUrl = currentPanel.imageUrl;
   const currentImageStatus = preloadedImages.get(currentImageUrl);
@@ -219,23 +234,6 @@ export default function Home() {
       </div>
     );
   }
-
-
-  // Get previous and next panels
-  const currentIndex = availableYears.indexOf(currentYear);
-  const prevYear = currentIndex > 0 ? availableYears[currentIndex - 1] : null;
-  const nextYear = currentIndex < availableYears.length - 1 ? availableYears[currentIndex + 1] : null;
-  const prevPanel = prevYear ? sampleArtworkPanels.find(p => p.year === prevYear) : null;
-  const nextPanel = nextYear ? sampleArtworkPanels.find(p => p.year === nextYear) : null;
-
-  // Navigation handlers
-  const goToPrevious = () => {
-    if (prevYear) handleYearChange(prevYear);
-  };
-  
-  const goToNext = () => {
-    if (nextYear) handleYearChange(nextYear);
-  };
 
   // Responsive layout
   return (
