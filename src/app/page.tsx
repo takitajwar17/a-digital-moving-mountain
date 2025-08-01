@@ -334,7 +334,14 @@ export default function Home() {
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden md:flex h-full">
+      <div className="hidden md:flex h-full relative">
+        {/* Year display at bottom center for desktop */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
+          <div className="bg-black/70 text-white px-6 py-2 rounded-full">
+            <p className="text-lg font-semibold">{currentPanel.year}</p>
+          </div>
+        </div>
+
         {/* Left side - Previous image */}
         <div className="flex-1 flex items-center justify-center relative">
           {prevPanel && (
@@ -375,6 +382,15 @@ export default function Home() {
               panPosition={settings.panPosition}
               onPanChange={updatePan}
               className="h-full"
+            />
+          </div>
+          
+          {/* Zoom controls at bottom for desktop */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-40">
+            <ZoomControls
+              zoomLevel={settings.zoomLevel}
+              onZoomChange={updateZoom}
+              onReset={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
             />
           </div>
         </div>
