@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { ArtworkPanel as ArtworkPanelType } from '@/types/artwork';
 import { Comment } from '@/types/comment';
 import CommentOverlay from './CommentOverlay';
+import ZoomControls from './ZoomControls';
 
 interface ArtworkPanelProps {
   panel: ArtworkPanelType;
@@ -26,8 +27,7 @@ export default function ArtworkPanel({
   onCommentAdd,
   onCommentClick,
   zoomLevel,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onZoomChange: _,
+  onZoomChange,
   panPosition,
   onPanChange,
   onSwipeLeft,
@@ -190,6 +190,21 @@ export default function ArtworkPanel({
     setImageLoaded(false);
   };
 
+  // Handle zoom change
+  const handleZoomChange = useCallback((zoom: number) => {
+    if (onZoomChange) {
+      onZoomChange(zoom);
+    }
+  }, [onZoomChange]);
+
+  // Handle reset view
+  const handleResetView = useCallback(() => {
+    if (onZoomChange) {
+      onZoomChange(1);
+    }
+    onPanChange({ x: 0, y: 0 });
+  }, [onZoomChange, onPanChange]);
+
   // Determine if we should show loading state
   const shouldShowLoading = !imageLoaded && !imageError;
 
@@ -281,6 +296,17 @@ export default function ArtworkPanel({
       {imageLoaded && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg pointer-events-none">
           <p className="text-lg font-semibold">{panel.year}</p>
+        </div>
+      )}
+
+      {/* Zoom Controls at bottom left */}
+      {imageLoaded && (
+        <div className="absolute bottom-4 left-4 z-10">
+          <ZoomControls
+            zoomLevel={zoomLevel}
+            onZoomChange={handleZoomChange}
+            onReset={handleResetView}
+          />
         </div>
       )}
 
