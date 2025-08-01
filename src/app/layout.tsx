@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Titillium_Web } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -46,6 +47,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${titilliumWeb.variable} antialiased`}
       >
         {children}
+        <Analytics />
         <script
           dangerouslySetInnerHTML={{
             __html: `
