@@ -234,7 +234,7 @@ export default function Home() {
                 : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
             }`}
           >
-            ← {prevPanel ? prevPanel.year : 'Prev'}
+             {prevPanel ? prevPanel.year : 'Prev'}
           </button>
           
           <div className="text-center px-4">
@@ -271,7 +271,7 @@ export default function Home() {
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded">
-                  ← {prevPanel.year}
+                   {prevPanel.year}
                 </div>
               </div>
             </div>
