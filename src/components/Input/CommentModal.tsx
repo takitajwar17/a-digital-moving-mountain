@@ -10,11 +10,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -94,8 +89,8 @@ export default function CommentModal({
   // Embedded mode - render without Dialog wrapper
   if (embedded) {
     return (
-      <Card className={cn("w-full", className)}>
-        <CardContent className="pt-6">
+      <div className={cn("w-full bg-white rounded-xl border shadow-sm", className)}>
+        <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Textarea
@@ -104,9 +99,9 @@ export default function CommentModal({
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
-                rows={4}
+                rows={6}
                 className={cn(
-                  "resize-none",
+                  "resize-none bg-white min-h-[150px]",
                   isOverLimit && "border-destructive focus-visible:ring-destructive/20"
                 )}
                 maxLength={maxLength + 50}
@@ -123,9 +118,9 @@ export default function CommentModal({
               </div>
             </div>
           </form>
-        </CardContent>
+        </div>
         
-        <CardFooter className="flex justify-between">
+        <div className="flex justify-between px-6 pb-6">
           <Button
             type="button"
             variant="outline"
@@ -150,8 +145,8 @@ export default function CommentModal({
               </>
             )}
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -159,7 +154,7 @@ export default function CommentModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
-        className={cn("sm:max-w-md", className)}
+        className={cn("sm:max-w-md bg-white", className)}
         onPointerDownOutside={handleCancel}
         onEscapeKeyDown={handleCancel}
       >
@@ -178,9 +173,9 @@ export default function CommentModal({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              rows={4}
+              rows={6}
               className={cn(
-                "resize-none",
+                "resize-none bg-white min-h-[150px]",
                 isOverLimit && "border-destructive focus-visible:ring-destructive/20"
               )}
               maxLength={maxLength + 50}

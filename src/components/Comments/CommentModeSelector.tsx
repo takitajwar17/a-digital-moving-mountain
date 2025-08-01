@@ -3,12 +3,6 @@
 import { useState } from 'react';
 import { MessageSquare, Paintbrush, X } from 'lucide-react';
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -21,7 +15,7 @@ import { cn } from '@/lib/utils';
 
 interface CommentModeSelectorProps {
   onSubmitText: (text: string) => void;
-  onSubmitDrawing: (imageData: string) => void;
+  onSubmitDrawing: (imageData: string, text?: string) => void;
   onCancel: () => void;
   className?: string;
 }
@@ -38,20 +32,20 @@ export default function CommentModeSelector({
     onSubmitText(text);
   };
 
-  const handleDrawingSubmit = (imageData: string) => {
-    onSubmitDrawing(imageData);
+  const handleDrawingSubmit = (imageData: string, text?: string) => {
+    onSubmitDrawing(imageData, text);
   };
 
   return (
-    <Card 
-      className={cn("w-full max-w-md", className)}
+    <div 
+      className={cn("w-full max-w-md bg-white rounded-xl border shadow-lg", className)}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
     >
-      <CardHeader className="pb-4">
+      <div className="p-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Add Comment</CardTitle>
+          <h2 className="text-lg font-semibold leading-none">Add Comment</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -60,16 +54,16 @@ export default function CommentModeSelector({
             <X className="h-4 w-4" />
           </Button>
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4">
+      <div className="px-6 space-y-4">
         <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="text" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100">
+            <TabsTrigger value="text" className="flex items-center gap-2 bg-white data-[state=active]:bg-white">
               <MessageSquare className="h-4 w-4" />
               Text
             </TabsTrigger>
-            <TabsTrigger value="drawing" className="flex items-center gap-2">
+            <TabsTrigger value="drawing" className="flex items-center gap-2 bg-white data-[state=active]:bg-white">
               <Paintbrush className="h-4 w-4" />
               Draw
             </TabsTrigger>
@@ -79,7 +73,7 @@ export default function CommentModeSelector({
             <CommentModal
               onSubmit={handleTextSubmit}
               onCancel={onCancel}
-              className="border-none shadow-none"
+              className="border-none shadow-none bg-transparent"
               embedded={true}
             />
           </TabsContent>
@@ -88,11 +82,11 @@ export default function CommentModeSelector({
             <DrawingCanvas
               onSave={handleDrawingSubmit}
               onCancel={onCancel}
-              className="border-none shadow-none"
+              className="border-none shadow-none bg-transparent"
             />
           </TabsContent>
         </Tabs>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

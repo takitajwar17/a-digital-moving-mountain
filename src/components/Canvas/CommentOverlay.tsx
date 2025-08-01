@@ -11,7 +11,7 @@ interface CommentOverlayProps {
   isAddingComment: boolean;
   commentPosition: { x: number; y: number } | null;
   onCommentSubmit: (text: string) => void;
-  onDrawingSubmit: (imageData: string) => void;
+  onDrawingSubmit: (imageData: string, text?: string) => void;
   onCommentCancel: () => void;
 }
 

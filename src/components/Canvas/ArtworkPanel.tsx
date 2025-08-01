@@ -163,9 +163,9 @@ export default function ArtworkPanel({
   };
 
   // Handle drawing submission
-  const handleDrawingSubmit = (imageData: string) => {
+  const handleDrawingSubmit = (imageData: string, text?: string) => {
     if (commentPosition) {
-      onCommentAdd(commentPosition, undefined, imageData);
+      onCommentAdd(commentPosition, text, imageData);
       setIsAddingComment(false);
       setCommentPosition(null);
     }
