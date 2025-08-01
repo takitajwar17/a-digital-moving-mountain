@@ -247,9 +247,8 @@ export default function ArtworkPanel({
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 70vw"
             style={{
-              maxWidth: '100vw',
+              width: '100vw',
               maxHeight: '100vh',
-              width: 'auto',
               height: 'auto',
               objectFit: 'contain',
             }}
@@ -292,12 +291,6 @@ export default function ArtworkPanel({
         </div>
       </div>
 
-      {/* Year display at bottom center */}
-      {imageLoaded && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-4 py-2 rounded-lg pointer-events-none">
-          <p className="text-lg font-semibold">{panel.year}</p>
-        </div>
-      )}
 
 
     </div>
