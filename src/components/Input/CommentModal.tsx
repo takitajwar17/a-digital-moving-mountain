@@ -93,8 +93,8 @@ export default function CommentModal({
   if (embedded) {
     return (
       <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col", className)}>
-        <div className="p-4 flex-1 flex flex-col">
-          <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-3">
+        <div className="p-2 flex-1 flex flex-col">
+          <form onSubmit={handleSubmit} className="h-full flex flex-col space-y-2">
             {/* Color Picker */}
             <ColorPicker
               selectedColor={selectedColor}
@@ -109,7 +109,7 @@ export default function CommentModal({
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 className={cn(
-                  "resize-none bg-white flex-1 min-h-[120px]",
+                  "resize-none bg-white flex-1 min-h-[60px] text-sm",
                   isOverLimit && "border-destructive focus-visible:ring-destructive/20"
                 )}
                 maxLength={maxLength + 50}
@@ -128,11 +128,12 @@ export default function CommentModal({
           </form>
         </div>
         
-        <div className="flex justify-between px-4 pb-4 border-t pt-3">
+        <div className="flex justify-between px-2 pb-2 border-t pt-2">
           <Button
             type="button"
             variant="outline"
             onClick={handleCancel}
+            className="h-8 text-xs"
           >
             Cancel
           </Button>
@@ -140,15 +141,16 @@ export default function CommentModal({
           <Button
             onClick={handleSubmit}
             disabled={!text.trim() || isSubmitting || isOverLimit}
+            className="h-8 text-xs"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                 Posting...
               </>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-3 w-3 mr-1" />
                 Post
               </>
             )}
@@ -207,30 +209,30 @@ export default function CommentModal({
             </div>
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-3">
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
-              className="h-12 text-base sm:h-10 sm:text-sm order-2 sm:order-1"
+              className="h-8 text-xs sm:h-8 sm:text-xs order-2 sm:order-1"
             >
-              <X className="h-4 w-4 mr-2" />
+              <X className="h-3 w-3 mr-1" />
               Cancel
             </Button>
 
             <Button
               type="submit"
               disabled={!text.trim() || isSubmitting || isOverLimit}
-              className="h-12 text-base sm:h-10 sm:text-sm order-1 sm:order-2"
+              className="h-8 text-xs sm:h-8 sm:text-xs order-1 sm:order-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                   Posting...
                 </>
               ) : (
                 <>
-                  <Send className="h-4 w-4 mr-2" />
+                  <Send className="h-3 w-3 mr-1" />
                   Post Comment
                 </>
               )}
@@ -239,7 +241,7 @@ export default function CommentModal({
         </form>
 
         {/* Helpful hint - hide on mobile */}
-        <div className="hidden sm:block text-xs text-muted-foreground text-center mt-2">
+        <div className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
           Press Cmd/Ctrl + Enter to post quickly
         </div>
       </DialogContent>

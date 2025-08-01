@@ -25,13 +25,13 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set consistent canvas size with better landscape proportions
-    canvas.width = 420;
-    canvas.height = 160;
+    // Set consistent canvas size with better landscape proportions (50% of original)
+    canvas.width = 210;
+    canvas.height = 80;
 
     // Set drawing style - check for mobile viewport
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    ctx.lineWidth = isMobile ? 3 : 2;
+    ctx.lineWidth = isMobile ? 2 : 1;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = selectedColor;
@@ -120,7 +120,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
 
   return (
     <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col", className)}>
-      <div className="p-4 flex-1 flex flex-col space-y-3">
+      <div className="p-2 flex-1 flex flex-col space-y-2">
         {/* Color Picker */}
         <ColorPicker
           selectedColor={selectedColor}
@@ -133,7 +133,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
             <canvas
               ref={canvasRef}
               className="border border-border rounded-md cursor-crosshair touch-none bg-white"
-              style={{ touchAction: 'none', width: '420px', height: '160px' }}
+              style={{ touchAction: 'none', width: '210px', height: '80px' }}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -148,20 +148,21 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
               variant="outline"
               onClick={clearCanvas}
               size="sm"
+              className="h-6 text-xs"
             >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Clear Drawing
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Clear
             </Button>
           </div>
         </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between px-4 pb-4 border-t pt-3">
+      <div className="flex flex-col sm:flex-row gap-2 sm:justify-between px-2 pb-2 border-t pt-2">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
-          className="h-12 text-base sm:h-10 sm:text-sm order-2 sm:order-1"
+          className="h-8 text-xs order-2 sm:order-1"
         >
           Cancel
         </Button>
@@ -169,9 +170,9 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         <Button
           onClick={saveDrawing}
           disabled={!hasDrawn}
-          className="h-12 text-base sm:h-10 sm:text-sm order-1 sm:order-2"
+          className="h-8 text-xs order-1 sm:order-2"
         >
-          <Save className="h-4 w-4 mr-2" />
+          <Save className="h-3 w-3 mr-1" />
           Save Drawing
         </Button>
       </div>
