@@ -20,6 +20,7 @@ import { Comment, CommentInput } from '@/types/comment';
 const COLLECTION_NAME = 'comments';
 
 // Initialize profanity filter lazily
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let profanityFilter: any = null;
 
 async function initProfanityFilter() {
