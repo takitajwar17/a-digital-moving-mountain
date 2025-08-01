@@ -121,8 +121,7 @@ export default function CommentOverlay({
               onTouchStart={() => onCommentClick(comment)}
             >
               <div 
-                className="rounded-lg p-1 border-2"
-                style={{ borderColor: comment.color || '#000000' }}
+                className="rounded-lg p-1"
               >
                 <Image 
                   src={comment.imageData || ''} 
