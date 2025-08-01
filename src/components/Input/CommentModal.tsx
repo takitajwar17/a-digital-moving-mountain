@@ -164,25 +164,27 @@ export default function CommentModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
-        className={cn("w-[47.5vw] max-w-[300px] h-[45vh] max-h-[250px] bg-white", className)}
+        className={cn("w-[47.5vw] max-w-[300px] h-auto max-h-[350px] bg-white p-4 flex flex-col overflow-hidden", className)}
         onPointerDownOutside={handleCancel}
         onEscapeKeyDown={handleCancel}
       >
-        <DialogHeader>
-          <DialogTitle className="text-sm sm:text-base">Add Your Comment</DialogTitle>
-          <DialogDescription className="text-xs sm:text-sm">
-            Share your thoughts about this artwork
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-sm">Add Your Comment</DialogTitle>
+          <DialogDescription className="text-xs">
+            Share your thoughts
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           {/* Color Picker */}
-          <ColorPicker
-            selectedColor={selectedColor}
-            onColorChange={setSelectedColor}
-          />
+          <div className="mb-2">
+            <ColorPicker
+              selectedColor={selectedColor}
+              onColorChange={setSelectedColor}
+            />
+          </div>
           
-          <div className="space-y-2">
+          <div className="flex-1 flex flex-col min-h-0 mb-2">
             <Textarea
               ref={textareaRef}
               value={text}
@@ -191,7 +193,7 @@ export default function CommentModal({
               placeholder={placeholder}
               rows={3}
               className={cn(
-                "resize-none bg-white min-h-[60px] text-sm",
+                "resize-none bg-white min-h-[60px] max-h-[100px] text-sm flex-1",
                 isOverLimit && "border-destructive focus-visible:ring-destructive/20"
               )}
               maxLength={maxLength + 50}
@@ -199,7 +201,7 @@ export default function CommentModal({
             />
             
             {/* Character count */}
-            <div className="flex justify-end text-xs text-muted-foreground">
+            <div className="flex justify-end text-[10px] text-muted-foreground mt-1">
               <span className={cn(
                 isOverLimit ? "text-destructive" : 
                 isNearLimit ? "text-yellow-600" : "text-muted-foreground"
@@ -209,12 +211,12 @@ export default function CommentModal({
             </div>
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="gap-2 mt-auto">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
-              className="h-8 text-xs sm:h-8 sm:text-xs order-2 sm:order-1"
+              className="h-7 text-xs"
             >
               <X className="h-3 w-3 mr-1" />
               Cancel
@@ -223,7 +225,7 @@ export default function CommentModal({
             <Button
               type="submit"
               disabled={!text.trim() || isSubmitting || isOverLimit}
-              className="h-8 text-xs sm:h-8 sm:text-xs order-1 sm:order-2"
+              className="h-7 text-xs"
             >
               {isSubmitting ? (
                 <>
@@ -233,17 +235,12 @@ export default function CommentModal({
               ) : (
                 <>
                   <Send className="h-3 w-3 mr-1" />
-                  Post Comment
+                  Post
                 </>
               )}
             </Button>
           </DialogFooter>
         </form>
-
-        {/* Helpful hint - hide on mobile */}
-        <div className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
-          Press Cmd/Ctrl + Enter to post quickly
-        </div>
       </DialogContent>
     </Dialog>
   );

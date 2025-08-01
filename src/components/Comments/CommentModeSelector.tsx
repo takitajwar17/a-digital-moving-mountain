@@ -38,12 +38,12 @@ export default function CommentModeSelector({
 
   return (
     <div 
-      className={cn("w-[47.5vw] max-w-[300px] h-[45vh] max-h-[250px] bg-white rounded-xl border shadow-lg", className)}
+      className={cn("w-[47.5vw] max-w-[300px] h-[45vh] max-h-[350px] bg-white rounded-xl border shadow-lg flex flex-col overflow-hidden", className)}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
     >
-      <div className="p-2 pb-1">
+      <div className="p-2 pb-1 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold leading-none">Add Comment</h2>
           <Button
@@ -57,8 +57,8 @@ export default function CommentModeSelector({
         </div>
       </div>
 
-      <div className="px-2 pb-2 flex-1 flex flex-col">
-        <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')} className="h-full flex flex-col">
+      <div className="px-2 pb-2 flex-1 flex flex-col min-h-0">
+        <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')} className="h-full flex flex-col min-h-0">
           <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-2 h-8">
             <TabsTrigger value="text" className="flex items-center gap-1 bg-white data-[state=active]:bg-white text-xs h-7">
               <MessageSquare className="h-3 w-3" />
@@ -70,7 +70,7 @@ export default function CommentModeSelector({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="text" className="mt-0 flex-1">
+          <TabsContent value="text" className="mt-0 flex-1 min-h-0 overflow-hidden">
             <CommentModal
               onSubmit={handleTextSubmit}
               onCancel={onCancel}
@@ -79,7 +79,7 @@ export default function CommentModeSelector({
             />
           </TabsContent>
 
-          <TabsContent value="drawing" className="mt-0 flex-1">
+          <TabsContent value="drawing" className="mt-0 flex-1 min-h-0 overflow-hidden">
             <DrawingCanvas
               onSave={handleDrawingSubmit}
               onCancel={onCancel}

@@ -119,17 +119,19 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
   };
 
   return (
-    <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col", className)}>
-      <div className="p-2 flex-1 flex flex-col space-y-2">
+    <div className={cn("w-full h-full bg-white rounded-xl border shadow-sm flex flex-col overflow-hidden", className)}>
+      <div className="p-2 flex-1 flex flex-col space-y-1 min-h-0">
         {/* Color Picker */}
-        <ColorPicker
-          selectedColor={selectedColor}
-          onColorChange={setSelectedColor}
-        />
+        <div className="flex-shrink-0">
+          <ColorPicker
+            selectedColor={selectedColor}
+            onColorChange={setSelectedColor}
+          />
+        </div>
 
         {/* Canvas Section */}
-        <div className="flex-1 flex flex-col space-y-2">
-          <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex flex-col space-y-1 min-h-0">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <canvas
               ref={canvasRef}
               className="border border-border rounded-md cursor-crosshair touch-none bg-white"
@@ -143,7 +145,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
               onTouchEnd={stopDrawing}
             />
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center flex-shrink-0">
             <Button
               variant="outline"
               onClick={clearCanvas}
@@ -157,12 +159,12 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-2 sm:justify-between px-2 pb-2 border-t pt-2">
+      <div className="flex gap-2 justify-between px-2 pb-2 border-t pt-2 flex-shrink-0">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
-          className="h-8 text-xs order-2 sm:order-1"
+          className="h-7 text-xs"
         >
           Cancel
         </Button>
@@ -170,7 +172,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         <Button
           onClick={saveDrawing}
           disabled={!hasDrawn}
-          className="h-8 text-xs order-1 sm:order-2"
+          className="h-7 text-xs"
         >
           <Save className="h-3 w-3 mr-1" />
           Save Drawing
