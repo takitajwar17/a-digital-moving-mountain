@@ -162,13 +162,13 @@ export default function CommentModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
-        className={cn("w-[600px] h-[400px] bg-white", className)}
+        className={cn("w-[95vw] max-w-[600px] h-[90vh] max-h-[500px] bg-white", className)}
         onPointerDownOutside={handleCancel}
         onEscapeKeyDown={handleCancel}
       >
         <DialogHeader>
-          <DialogTitle>Add Your Comment</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Add Your Comment</DialogTitle>
+          <DialogDescription className="text-base">
             Share your thoughts about this artwork with the community
           </DialogDescription>
         </DialogHeader>
@@ -189,14 +189,15 @@ export default function CommentModal({
               placeholder={placeholder}
               rows={4}
               className={cn(
-                "resize-none bg-white min-h-[120px]",
+                "resize-none bg-white min-h-[120px] text-base",
                 isOverLimit && "border-destructive focus-visible:ring-destructive/20"
               )}
               maxLength={maxLength + 50}
+              style={{ fontSize: '16px' }} // Prevent zoom on iOS
             />
             
             {/* Character count */}
-            <div className="flex justify-end text-xs text-muted-foreground">
+            <div className="flex justify-end text-sm text-muted-foreground">
               <span className={cn(
                 isOverLimit ? "text-destructive" : 
                 isNearLimit ? "text-yellow-600" : "text-muted-foreground"
@@ -206,11 +207,12 @@ export default function CommentModal({
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
+              className="h-12 text-base sm:h-10 sm:text-sm order-2 sm:order-1"
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
@@ -219,6 +221,7 @@ export default function CommentModal({
             <Button
               type="submit"
               disabled={!text.trim() || isSubmitting || isOverLimit}
+              className="h-12 text-base sm:h-10 sm:text-sm order-1 sm:order-2"
             >
               {isSubmitting ? (
                 <>
@@ -235,8 +238,8 @@ export default function CommentModal({
           </DialogFooter>
         </form>
 
-        {/* Helpful hint */}
-        <div className="text-xs text-muted-foreground text-center mt-2">
+        {/* Helpful hint - hide on mobile */}
+        <div className="hidden sm:block text-xs text-muted-foreground text-center mt-2">
           Press Cmd/Ctrl + Enter to post quickly
         </div>
       </DialogContent>

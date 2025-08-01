@@ -438,7 +438,7 @@ export default function AdminPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
               <Card className="bg-white border-gray-200">
                 <CardContent className="pt-6 bg-white">
                   <div className="flex items-center">
@@ -530,7 +530,7 @@ export default function AdminPage() {
             )}
             
             {/* Moderation Header */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex flex-col gap-4 items-start justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-black">Content Moderation</h2>
                 <p className="text-gray-600">
@@ -580,7 +580,7 @@ export default function AdminPage() {
             {/* Filters and Search */}
             <Card className="bg-white border-gray-200">
               <CardContent className="pt-6 bg-white">
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex-1">
                     <div className="relative">
                       {searchLoading ? (
@@ -592,13 +592,13 @@ export default function AdminPage() {
                         placeholder="Search comments..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white border-gray-300 text-black"
+                        className="pl-10 bg-white border-gray-300 text-black h-12 text-base"
                         disabled={searchLoading}
                       />
                     </div>
                   </div>
                   <Select value={filterStatus} onValueChange={(value: 'all' | 'approved' | 'pending') => setFilterStatus(value)}>
-                    <SelectTrigger className="w-[180px] bg-white border-gray-300 text-black">
+                    <SelectTrigger className="w-full sm:w-[180px] bg-white border-gray-300 text-black h-12 text-base">
                       <Filter className="mr-2 h-4 w-4" />
                       <SelectValue />
                     </SelectTrigger>
@@ -634,32 +634,12 @@ export default function AdminPage() {
                     No comments found matching your criteria.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table className="bg-white">
-                    <TableHeader className="bg-gray-50">
-                      <TableRow className="border-gray-200">
-                        <TableHead className="w-12 text-black">
-                          <Checkbox
-                            checked={selectedComments.length === filteredComments.length && filteredComments.length > 0}
-                            onCheckedChange={(checked) => {
-                              setSelectedComments(
-                                checked ? filteredComments.map(c => c.id) : []
-                              );
-                            }}
-                            aria-label="Select all comments"
-                          />
-                        </TableHead>
-                        <TableHead className="min-w-[200px] text-black">Content</TableHead>
-                        <TableHead className="min-w-[80px] text-black">Year</TableHead>
-                        <TableHead className="min-w-[100px] text-black">Date</TableHead>
-                        <TableHead className="min-w-[100px] text-black">Status</TableHead>
-                        <TableHead className="min-w-[120px] text-black">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody className="bg-white">
+                  <div className="space-y-4">
+                    {/* Mobile Card Layout for small screens */}
+                    <div className="md:hidden space-y-4">
                       {filteredComments.map((comment) => (
-                        <TableRow key={comment.id} className="hover:bg-gray-50 border-gray-200">
-                          <TableCell>
+                        <div key={comment.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
                             <Checkbox
                               checked={selectedComments.includes(comment.id)}
                               onCheckedChange={(checked) => {
@@ -671,175 +651,381 @@ export default function AdminPage() {
                               }}
                               aria-label={`Select comment ${comment.id}`}
                             />
-                          </TableCell>
-                          <TableCell className="max-w-xs">
-                            <div className="space-y-1">
-                              {comment.text && (
-                                <p className="text-sm truncate text-black">{comment.text}</p>
-                              )}
-                              {comment.imageData && (
-                                <div className="flex items-center gap-2">
-                                  <Dialog>
-                                    <DialogTrigger asChild>
+                            <div className="flex gap-2">
+                              <Badge variant="outline" className="border-gray-300 text-gray-700 text-xs">{comment.year}</Badge>
+                              <Badge className={comment.approved ? 'bg-green-600 text-white text-xs' : 'bg-gray-500 text-white text-xs'}>
+                                {comment.approved ? 'Approved' : 'Pending'}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            {comment.text && (
+                              <p className="text-base text-black leading-relaxed">{comment.text}</p>
+                            )}
+                            {comment.imageData && (
+                              <div className="flex items-center gap-3">
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <div 
+                                      className="border-2 rounded p-1 cursor-pointer hover:opacity-80 transition-opacity"
+                                      style={{ borderColor: comment.color || '#000000' }}
+                                    >
+                                      <Image 
+                                        src={comment.imageData} 
+                                        alt="Drawing thumbnail" 
+                                        width={60}
+                                        height={60}
+                                        className="rounded object-cover"
+                                        unoptimized={true}
+                                      />
+                                    </div>
+                                  </DialogTrigger>
+                                  <DialogContent className="bg-white border-gray-200 max-w-[90vw] max-h-[80vh]">
+                                    <DialogHeader className="bg-white">
+                                      <DialogTitle className="text-black text-lg">Drawing - Year {comment.year}</DialogTitle>
+                                      <DialogDescription className="text-gray-600">
+                                        {new Date(comment.timestamp).toLocaleString()} • Color: {comment.color || '#000000'}
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="flex justify-center p-4">
                                       <div 
-                                        className="border-2 rounded p-1 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                                        className="border-4 rounded-lg p-2"
                                         style={{ borderColor: comment.color || '#000000' }}
                                       >
                                         <Image 
                                           src={comment.imageData} 
-                                          alt="Drawing thumbnail" 
-                                          width={48}
-                                          height={48}
-                                          className="rounded object-cover"
+                                          alt="Full size drawing" 
+                                          width={400}
+                                          height={300}
+                                          className="rounded object-contain max-w-full h-auto"
                                           unoptimized={true}
                                         />
                                       </div>
-                                    </DialogTrigger>
-                                    <DialogContent className="bg-white border-gray-200 max-w-2xl">
-                                      <DialogHeader className="bg-white">
-                                        <DialogTitle className="text-black">Drawing - Year {comment.year}</DialogTitle>
-                                        <DialogDescription className="text-gray-600">
-                                          {new Date(comment.timestamp).toLocaleString()} • Color: {comment.color || '#000000'}
-                                        </DialogDescription>
-                                      </DialogHeader>
-                                      <div className="flex justify-center p-4">
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                                <div className="flex items-center gap-1 text-sm text-gray-500">
+                                  <Eye className="h-4 w-4" />
+                                  Drawing
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
+                                {comment.type}
+                              </Badge>
+                              {comment.color && (
+                                <div 
+                                  className="w-4 h-4 rounded-full border" 
+                                  style={{ backgroundColor: comment.color }}
+                                />
+                              )}
+                              <span className="text-xs">{new Date(comment.timestamp).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2 pt-2 border-t">
+                            {!comment.approved && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-white border-gray-300 text-black hover:bg-gray-50 h-10 px-4 text-sm"
+                                onClick={() => handleApproveComment(comment.id, true)}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Approve
+                              </Button>
+                            )}
+                            {comment.approved && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-white border-gray-300 text-black hover:bg-gray-50 h-10 px-4 text-sm"
+                                onClick={() => handleApproveComment(comment.id, false)}
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Reject
+                              </Button>
+                            )}
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50 h-10 px-4 text-sm">
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Details
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="bg-white border-gray-200 max-w-[90vw] max-h-[80vh] overflow-y-auto">
+                                <DialogHeader className="bg-white">
+                                  <DialogTitle className="text-black text-lg">Comment Details</DialogTitle>
+                                  <DialogDescription className="text-gray-600">
+                                    Year {comment.year} • {new Date(comment.timestamp).toLocaleString()}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  {comment.text && (
+                                    <div>
+                                      <h4 className="font-medium mb-2 text-black text-base">Text Content</h4>
+                                      <p className="text-base bg-gray-100 p-4 rounded text-black">{comment.text}</p>
+                                    </div>
+                                  )}
+                                  {comment.imageData && (
+                                    <div>
+                                      <h4 className="font-medium mb-2 text-black text-base">Drawing</h4>
+                                      <Image 
+                                        src={comment.imageData} 
+                                        alt="User drawing" 
+                                        width={300}
+                                        height={200}
+                                        className="border rounded max-w-full h-auto"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="grid grid-cols-1 gap-4 text-base">
+                                    <div>
+                                      <span className="font-medium text-black">Status:</span>
+                                      <Badge className={`ml-2 ${comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}`}>
+                                        {comment.approved ? 'Approved' : 'Pending'}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium text-black">Type:</span>
+                                      <Badge className="ml-2 border-gray-300 text-gray-700" variant="outline">{comment.type}</Badge>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium text-black">Device:</span>
+                                      <span className="ml-2 text-gray-600">{comment.metadata?.device || 'Unknown'}</span>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium text-black">Input:</span>
+                                      <span className="ml-2 text-gray-600">{comment.metadata?.inputMethod || 'Unknown'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="text-red-600 hover:text-red-700 bg-white border-gray-300 hover:bg-red-50 h-10 px-4 text-sm"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Desktop Table Layout for larger screens */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <Table className="bg-white">
+                      <TableHeader className="bg-gray-50">
+                        <TableRow className="border-gray-200">
+                          <TableHead className="w-12 text-black">
+                            <Checkbox
+                              checked={selectedComments.length === filteredComments.length && filteredComments.length > 0}
+                              onCheckedChange={(checked) => {
+                                setSelectedComments(
+                                  checked ? filteredComments.map(c => c.id) : []
+                                );
+                              }}
+                              aria-label="Select all comments"
+                            />
+                          </TableHead>
+                          <TableHead className="min-w-[200px] text-black">Content</TableHead>
+                          <TableHead className="min-w-[80px] text-black">Year</TableHead>
+                          <TableHead className="min-w-[100px] text-black">Date</TableHead>
+                          <TableHead className="min-w-[100px] text-black">Status</TableHead>
+                          <TableHead className="min-w-[120px] text-black">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody className="bg-white">
+                        {filteredComments.map((comment) => (
+                          <TableRow key={comment.id} className="hover:bg-gray-50 border-gray-200">
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedComments.includes(comment.id)}
+                                onCheckedChange={(checked) => {
+                                  setSelectedComments(prev => 
+                                    checked 
+                                      ? [...prev, comment.id]
+                                      : prev.filter(id => id !== comment.id)
+                                  );
+                                }}
+                                aria-label={`Select comment ${comment.id}`}
+                              />
+                            </TableCell>
+                            <TableCell className="max-w-xs">
+                              <div className="space-y-1">
+                                {comment.text && (
+                                  <p className="text-sm truncate text-black">{comment.text}</p>
+                                )}
+                                {comment.imageData && (
+                                  <div className="flex items-center gap-2">
+                                    <Dialog>
+                                      <DialogTrigger asChild>
                                         <div 
-                                          className="border-4 rounded-lg p-2"
+                                          className="border-2 rounded p-1 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                                           style={{ borderColor: comment.color || '#000000' }}
                                         >
                                           <Image 
                                             src={comment.imageData} 
-                                            alt="Full size drawing" 
-                                            width={500}
-                                            height={400}
-                                            className="rounded object-contain max-w-full h-auto"
+                                            alt="Drawing thumbnail" 
+                                            width={48}
+                                            height={48}
+                                            className="rounded object-cover"
                                             unoptimized={true}
                                           />
                                         </div>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-                                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                                    <Eye className="h-3 w-3" />
-                                    Drawing
-                                  </div>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
-                                  {comment.type}
-                                </Badge>
-                                {comment.color && (
-                                  <div 
-                                    className="w-3 h-3 rounded-full border" 
-                                    style={{ backgroundColor: comment.color }}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="border-gray-300 text-gray-700">{comment.year}</Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-600">
-                            {new Date(comment.timestamp).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}>
-                              {comment.approved ? 'Approved' : 'Pending'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {!comment.approved && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-white border-gray-300 text-black hover:bg-gray-50"
-                                  onClick={() => handleApproveComment(comment.id, true)}
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {comment.approved && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-white border-gray-300 text-black hover:bg-gray-50"
-                                  onClick={() => handleApproveComment(comment.id, false)}
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              )}
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button size="sm" variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="bg-white border-gray-200">
-                                  <DialogHeader className="bg-white">
-                                    <DialogTitle className="text-black">Comment Details</DialogTitle>
-                                    <DialogDescription className="text-gray-600">
-                                      Year {comment.year} • {new Date(comment.timestamp).toLocaleString()}
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    {comment.text && (
-                                      <div>
-                                        <h4 className="font-medium mb-2 text-black">Text Content</h4>
-                                        <p className="text-sm bg-gray-100 p-3 rounded text-black">{comment.text}</p>
-                                      </div>
-                                    )}
-                                    {comment.imageData && (
-                                      <div>
-                                        <h4 className="font-medium mb-2 text-black">Drawing</h4>
-                                        <Image 
-                                          src={comment.imageData} 
-                                          alt="User drawing" 
-                                          width={300}
-                                          height={200}
-                                          className="border rounded"
-                                        />
-                                      </div>
-                                    )}
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                      <div>
-                                        <span className="font-medium text-black">Status:</span>
-                                        <Badge className={`ml-2 ${comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}`}>
-                                          {comment.approved ? 'Approved' : 'Pending'}
-                                        </Badge>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium text-black">Type:</span>
-                                        <Badge className="ml-2 border-gray-300 text-gray-700" variant="outline">{comment.type}</Badge>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium text-black">Device:</span>
-                                        <span className="ml-2 text-gray-600">{comment.metadata?.device || 'Unknown'}</span>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium text-black">Input:</span>
-                                        <span className="ml-2 text-gray-600">{comment.metadata?.inputMethod || 'Unknown'}</span>
-                                      </div>
+                                      </DialogTrigger>
+                                      <DialogContent className="bg-white border-gray-200 max-w-2xl">
+                                        <DialogHeader className="bg-white">
+                                          <DialogTitle className="text-black">Drawing - Year {comment.year}</DialogTitle>
+                                          <DialogDescription className="text-gray-600">
+                                            {new Date(comment.timestamp).toLocaleString()} • Color: {comment.color || '#000000'}
+                                          </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="flex justify-center p-4">
+                                          <div 
+                                            className="border-4 rounded-lg p-2"
+                                            style={{ borderColor: comment.color || '#000000' }}
+                                          >
+                                            <Image 
+                                              src={comment.imageData} 
+                                              alt="Full size drawing" 
+                                              width={500}
+                                              height={400}
+                                              className="rounded object-contain max-w-full h-auto"
+                                              unoptimized={true}
+                                            />
+                                          </div>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                                      <Eye className="h-3 w-3" />
+                                      Drawing
                                     </div>
                                   </div>
-                                </DialogContent>
-                              </Dialog>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteComment(comment.id)}
-                                className="text-red-600 hover:text-red-700 bg-white border-gray-300 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                    </Table>
+                                )}
+                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <Badge variant="outline" className="text-xs border-gray-300 text-gray-700">
+                                    {comment.type}
+                                  </Badge>
+                                  {comment.color && (
+                                    <div 
+                                      className="w-3 h-3 rounded-full border" 
+                                      style={{ backgroundColor: comment.color }}
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="border-gray-300 text-gray-700">{comment.year}</Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-gray-600">
+                              {new Date(comment.timestamp).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}>
+                                {comment.approved ? 'Approved' : 'Pending'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {!comment.approved && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                                    onClick={() => handleApproveComment(comment.id, true)}
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {comment.approved && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                                    onClick={() => handleApproveComment(comment.id, false)}
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline" className="bg-white border-gray-300 text-black hover:bg-gray-50">
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="bg-white border-gray-200">
+                                    <DialogHeader className="bg-white">
+                                      <DialogTitle className="text-black">Comment Details</DialogTitle>
+                                      <DialogDescription className="text-gray-600">
+                                        Year {comment.year} • {new Date(comment.timestamp).toLocaleString()}
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                      {comment.text && (
+                                        <div>
+                                          <h4 className="font-medium mb-2 text-black">Text Content</h4>
+                                          <p className="text-sm bg-gray-100 p-3 rounded text-black">{comment.text}</p>
+                                        </div>
+                                      )}
+                                      {comment.imageData && (
+                                        <div>
+                                          <h4 className="font-medium mb-2 text-black">Drawing</h4>
+                                          <Image 
+                                            src={comment.imageData} 
+                                            alt="User drawing" 
+                                            width={300}
+                                            height={200}
+                                            className="border rounded"
+                                          />
+                                        </div>
+                                      )}
+                                      <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                          <span className="font-medium text-black">Status:</span>
+                                          <Badge className={`ml-2 ${comment.approved ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}`}>
+                                            {comment.approved ? 'Approved' : 'Pending'}
+                                          </Badge>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-black">Type:</span>
+                                          <Badge className="ml-2 border-gray-300 text-gray-700" variant="outline">{comment.type}</Badge>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-black">Device:</span>
+                                          <span className="ml-2 text-gray-600">{comment.metadata?.device || 'Unknown'}</span>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium text-black">Input:</span>
+                                          <span className="ml-2 text-gray-600">{comment.metadata?.inputMethod || 'Unknown'}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteComment(comment.id)}
+                                  className="text-red-600 hover:text-red-700 bg-white border-gray-300 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -855,7 +1041,7 @@ export default function AdminPage() {
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
               <Card className="bg-white border-gray-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-white">
                   <CardTitle className="text-sm font-medium text-black">Total QR Codes</CardTitle>
@@ -896,7 +1082,7 @@ export default function AdminPage() {
                 <CardDescription className="text-gray-600">Generate and manage QR codes for different use cases</CardDescription>
               </CardHeader>
               <CardContent className="bg-white">
-                <div className="flex flex-wrap gap-3">
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap">
                   <Button 
                     disabled={qrGenerating}
                     onClick={async () => {
@@ -911,17 +1097,19 @@ export default function AdminPage() {
                         setQrGenerating(false);
                       }
                     }}
+                    className="h-12 text-sm"
                   >
                     {qrGenerating ? (
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
                       <QrCode className="mr-2 h-4 w-4" />
                     )}
-                    Generate All Mobile QR Codes
+                    <span className="hidden sm:inline">Generate All Mobile QR Codes</span>
+                    <span className="sm:hidden">Generate QR Codes</span>
                   </Button>
                   <Button 
                     variant="outline"
-                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                    className="bg-white border-gray-300 text-black hover:bg-gray-50 h-12 text-sm"
                     onClick={() => {
                       const baseURL = window.location.origin;
                       const links = availableYears.map(year => `${baseURL}/?year=${year}`).join('\n');
@@ -937,22 +1125,24 @@ export default function AdminPage() {
                     }}
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    Download Share Links
+                    <span className="hidden sm:inline">Download Share Links</span>
+                    <span className="sm:hidden">Share Links</span>
                   </Button>
                   <Button 
                     variant="outline"
-                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                    className="bg-white border-gray-300 text-black hover:bg-gray-50 h-12 text-sm"
                     onClick={() => {
                       const event = new CustomEvent('generatePrintableQRCodes');
                       window.dispatchEvent(event);
                     }}
                   >
                     <Settings className="mr-2 h-4 w-4" />
-                    Create Print Sheet
+                    <span className="hidden sm:inline">Create Print Sheet</span>
+                    <span className="sm:hidden">Print Sheet</span>
                   </Button>
                   <Button 
                     variant="outline"
-                    className="bg-white border-gray-300 text-black hover:bg-gray-50"
+                    className="bg-white border-gray-300 text-black hover:bg-gray-50 h-12 text-sm"
                     onClick={() => {
                       // Generate tracking URLs for analytics
                       const trackingLinks = availableYears.map(year => 
@@ -970,7 +1160,8 @@ export default function AdminPage() {
                     }}
                   >
                     <BarChart3 className="mr-2 h-4 w-4" />
-                    Generate Tracking URLs
+                    <span className="hidden sm:inline">Generate Tracking URLs</span>
+                    <span className="sm:hidden">Tracking URLs</span>
                   </Button>
                 </div>
               </CardContent>

@@ -38,33 +38,34 @@ export default function CommentModeSelector({
 
   return (
     <div 
-      className={cn("w-[600px] h-[400px] bg-white rounded-xl border shadow-lg", className)}
+      className={cn("w-[95vw] max-w-[600px] h-[90vh] max-h-[500px] bg-white rounded-xl border shadow-lg", className)}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
     >
       <div className="p-4 pb-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold leading-none">Add Comment</h2>
+          <h2 className="text-xl sm:text-lg font-semibold leading-none">Add Comment</h2>
           <Button
             variant="ghost"
             size="sm"
             onClick={onCancel}
+            className="h-10 w-10 sm:h-8 sm:w-8"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
 
       <div className="px-4 pb-4 flex-1 flex flex-col">
         <Tabs value={mode} onValueChange={(value) => setMode(value as 'text' | 'drawing')} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-3">
-            <TabsTrigger value="text" className="flex items-center gap-2 bg-white data-[state=active]:bg-white">
-              <MessageSquare className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-3 h-12 sm:h-10">
+            <TabsTrigger value="text" className="flex items-center gap-2 bg-white data-[state=active]:bg-white text-base sm:text-sm h-10 sm:h-8">
+              <MessageSquare className="h-5 w-5 sm:h-4 sm:w-4" />
               Text
             </TabsTrigger>
-            <TabsTrigger value="drawing" className="flex items-center gap-2 bg-white data-[state=active]:bg-white">
-              <Paintbrush className="h-4 w-4" />
+            <TabsTrigger value="drawing" className="flex items-center gap-2 bg-white data-[state=active]:bg-white text-base sm:text-sm h-10 sm:h-8">
+              <Paintbrush className="h-5 w-5 sm:h-4 sm:w-4" />
               Draw
             </TabsTrigger>
           </TabsList>

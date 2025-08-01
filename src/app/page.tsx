@@ -198,25 +198,25 @@ export default function Home() {
           />
           
           {/* Mobile zoom controls */}
-          <div className="absolute top-4 right-4 flex gap-2 bg-black p-2 rounded">
+          <div className="absolute top-4 right-4 flex gap-2 bg-black bg-opacity-75 p-2 rounded-lg">
             <button
               onClick={() => updateZoom(Math.max(settings.zoomLevel / 1.2, 0.5))}
-              className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors font-bold"
+              className="w-12 h-12 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-bold text-lg touch-manipulation"
             >
               −
             </button>
-            <span className="text-xs text-white px-2 py-1 flex items-center font-medium">
+            <span className="text-sm text-white px-3 py-1 flex items-center font-medium min-w-[50px] justify-center">
               {Math.round(settings.zoomLevel * 100)}%
             </span>
             <button
               onClick={() => updateZoom(Math.min(settings.zoomLevel * 1.2, 3))}
-              className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors font-bold"
+              className="w-12 h-12 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-bold text-lg touch-manipulation"
             >
               +
             </button>
             <button
               onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
-              className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors text-xs font-bold"
+              className="w-12 h-12 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors text-sm font-bold touch-manipulation"
             >
               ↺
             </button>
@@ -228,7 +228,7 @@ export default function Home() {
           <button
             onClick={goToPrevious}
             disabled={!prevPanel}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium ${
+            className={`flex items-center gap-2 px-6 py-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation ${
               prevPanel 
                 ? 'bg-white bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40' 
                 : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
@@ -238,13 +238,13 @@ export default function Home() {
           </button>
           
           <div className="text-center px-4">
-            <p className="text-lg font-semibold">{currentPanel.year}</p>
+            <p className="text-xl font-semibold">{currentPanel.year}</p>
           </div>
           
           <button
             onClick={goToNext}
             disabled={!nextPanel}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium ${
+            className={`flex items-center gap-2 px-6 py-4 rounded-lg text-base font-medium min-h-[48px] touch-manipulation ${
               nextPanel 
                 ? 'bg-white bg-opacity-20 hover:bg-opacity-30 active:bg-opacity-40' 
                 : 'bg-white bg-opacity-10 text-gray-400 cursor-not-allowed'
@@ -298,25 +298,25 @@ export default function Home() {
           </div>
           
           {/* Zoom controls */}
-          <div className="absolute top-4 right-4 flex gap-2 bg-black p-2 rounded">
+          <div className="absolute top-4 right-4 flex gap-2 bg-black bg-opacity-75 p-2 rounded-lg">
             <button
               onClick={() => updateZoom(Math.max(settings.zoomLevel / 1.2, 0.5))}
-              className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors font-bold"
+              className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-bold text-base"
             >
               −
             </button>
-            <span className="text-xs text-white px-2 py-1 flex items-center font-medium">
+            <span className="text-sm text-white px-3 py-1 flex items-center font-medium min-w-[50px] justify-center">
               {Math.round(settings.zoomLevel * 100)}%
             </span>
             <button
               onClick={() => updateZoom(Math.min(settings.zoomLevel * 1.2, 3))}
-              className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors font-bold"
+              className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors font-bold text-base"
             >
               +
             </button>
             <button
               onClick={() => { updateZoom(1); updatePan({ x: 0, y: 0 }); }}
-              className="w-8 h-8 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded transition-colors text-xs font-bold"
+              className="w-10 h-10 flex items-center justify-center bg-white text-black hover:bg-gray-200 rounded-lg transition-colors text-sm font-bold"
             >
               ↺
             </button>

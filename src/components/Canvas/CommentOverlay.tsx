@@ -103,12 +103,12 @@ export default function CommentOverlay({
         >
           {comment.type === 'text' ? (
             <div 
-              className="bg-transparent px-4 py-3 cursor-pointer transition-all max-w-xs touch-manipulation"
+              className="bg-transparent px-4 py-3 cursor-pointer transition-all max-w-xs touch-manipulation min-h-[44px] flex items-center"
               onClick={() => onCommentClick(comment)}
               onTouchStart={() => onCommentClick(comment)}
             >
               <p 
-                className="text-base md:text-sm leading-relaxed font-medium drop-shadow-lg"
+                className="text-lg md:text-sm leading-relaxed font-medium drop-shadow-lg"
                 style={{ color: comment.color || '#000000' }}
               >
                 {comment.text}
@@ -116,7 +116,7 @@ export default function CommentOverlay({
             </div>
           ) : (
             <div 
-              className="bg-transparent p-2 cursor-pointer transition-all touch-manipulation"
+              className="bg-transparent p-2 cursor-pointer transition-all touch-manipulation min-h-[44px] flex items-center justify-center"
               onClick={() => onCommentClick(comment)}
               onTouchStart={() => onCommentClick(comment)}
             >
@@ -128,7 +128,7 @@ export default function CommentOverlay({
                   alt="User drawing" 
                   width={96}
                   height={96}
-                  className="max-w-24 max-h-24 md:max-w-20 md:max-h-20 rounded drop-shadow-lg"
+                  className="max-w-28 max-h-28 md:max-w-20 md:max-h-20 rounded drop-shadow-lg"
                   unoptimized={true}
                 />
               </div>

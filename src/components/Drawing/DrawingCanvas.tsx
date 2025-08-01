@@ -156,11 +156,12 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         </div>
       </div>
       
-      <div className="flex justify-between px-4 pb-4 border-t pt-3">
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-between px-4 pb-4 border-t pt-3">
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
+          className="h-12 text-base sm:h-10 sm:text-sm order-2 sm:order-1"
         >
           Cancel
         </Button>
@@ -168,6 +169,7 @@ export default function DrawingCanvas({ onSave, onCancel, className = '' }: Draw
         <Button
           onClick={saveDrawing}
           disabled={!hasDrawn}
+          className="h-12 text-base sm:h-10 sm:text-sm order-1 sm:order-2"
         >
           <Save className="h-4 w-4 mr-2" />
           Save Drawing

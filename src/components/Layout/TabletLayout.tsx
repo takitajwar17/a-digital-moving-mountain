@@ -62,18 +62,18 @@ export default function TabletLayout({
         {children}
         
         {/* Floating Instructions */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-6 py-3 rounded-full text-lg">
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-70 text-white px-6 py-4 rounded-full text-lg min-h-[50px] flex items-center justify-center touch-manipulation">
           Touch anywhere on the artwork to share your thoughts
         </div>
       </main>
 
       {/* Status Bar - Always visible */}
-      <div className="bg-gray-800 text-white px-6 py-2 text-sm flex justify-between items-center">
+      <div className="bg-gray-800 text-white px-6 py-3 text-base flex justify-between items-center min-h-[50px]">
         <span>
           {new Date().toLocaleTimeString()} | Gallery Installation
         </span>
         <span className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+          <div className="w-3 h-3 bg-green-400 rounded-full"></div>
           Connected
         </span>
       </div>

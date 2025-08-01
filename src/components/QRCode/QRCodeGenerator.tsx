@@ -207,8 +207,8 @@ export default function QRCodeGenerator({
 
       {/* Instructions */}
       <div className="bg-blue-50 p-4 rounded-lg">
-        <h4 className="text-sm font-medium text-blue-900 mb-2">Instructions:</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
+        <h4 className="text-base font-medium text-blue-900 mb-3">Instructions:</h4>
+        <ul className="text-base text-blue-800 space-y-2">
           <li>• Select a year to generate individual QR codes</li>
           <li>• Use &quot;Generate All QR Codes&quot; to create QR codes for all panels</li>
           <li>• Use &quot;Generate Printable Version&quot; to create a printer-friendly page</li>
