@@ -14,6 +14,7 @@ import { initializePerformanceHints, smartPrefetch } from '@/utils/resourceHints
 // Canvas components
 import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
 import ZoomControls from '@/components/Canvas/ZoomControls';
+import PerformanceDashboard from '@/components/PerformanceDashboard';
 
 // Sample data
 import { 
@@ -258,6 +259,8 @@ export default function Home() {
   // Responsive layout
   return (
     <div className="h-screen overflow-hidden bg-black">
+      {/* Performance Dashboard - only in development */}
+      {process.env.NODE_ENV === 'development' && <PerformanceDashboard />}
       {/* Logo - Fixed position for all layouts */}
       <a 
         href="https://adigitalmovingmountain.com/" 

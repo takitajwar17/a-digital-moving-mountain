@@ -3,6 +3,8 @@
  * Optimizes image loading performance without changing display behavior
  */
 
+import { perfLogger, logOptimization, logResourceHint, logNetworkStatus } from './performanceLogger';
+
 export interface ImageLoadingOptions {
   preferWebP?: boolean;
   useDeviceOptimizedSize?: boolean;
@@ -29,14 +31,22 @@ export function getOptimalImageUrl(
   }
 
   try {
+    perfLogger.startTimer(`optimize-${originalUrl}`);
+    
     // Check if we have optimized versions available
     const baseUrl = originalUrl.replace('/images/optimized/', '');
     
     let optimizedUrl = originalUrl;
+    const optimizationDetails: Record<string, unknown> = {
+      original: originalUrl,
+      viewport: window.innerWidth,
+      devicePixelRatio: window.devicePixelRatio || 1,
+    };
     
     // Select size based on viewport if device optimization is enabled
     if (useDeviceOptimizedSize) {
       const viewportWidth = window.innerWidth;
+      optimizationDetails.viewportWidth = viewportWidth;
       
       // For mobile devices (< 640px), use mobile images if available
       if (viewportWidth < 640) {
@@ -46,6 +56,13 @@ export function getOptimalImageUrl(
           prefetchImageIfExists(mobileUrl);
         }
         optimizedUrl = mobileUrl;
+        optimizationDetails.deviceType = 'mobile';
+        optimizationDetails.optimizedTo = 'mobile version';
+        logOptimization('Selected mobile image variant', { 
+          original: originalUrl, 
+          optimized: mobileUrl,
+          expectedSizeReduction: '~93%'
+        });
       }
       // For tablets (< 1024px), use tablet images if available  
       else if (viewportWidth < 1024) {
@@ -54,17 +71,59 @@ export function getOptimalImageUrl(
           prefetchImageIfExists(tabletUrl);
         }
         optimizedUrl = tabletUrl;
+        optimizationDetails.deviceType = 'tablet';
+        optimizationDetails.optimizedTo = 'tablet version';
+        logOptimization('Selected tablet image variant', { 
+          original: originalUrl, 
+          optimized: tabletUrl,
+          expectedSizeReduction: '~83%'
+        });
+      } else {
+        optimizationDetails.deviceType = 'desktop';
+        logOptimization('Using desktop image variant', { url: originalUrl });
       }
     }
     
-    // Prefer WebP if supported and available
-    if (preferWebP && supportsWebP()) {
+    // Skip WebP optimization for now - our WebP files are actually larger than JPGs!
+    // This can happen when JPGs are already highly optimized
+    // IMPORTANT: WebP versions only exist for the main images, not mobile/tablet variants
+    const isBaseImage = !optimizedUrl.includes('-mobile') && !optimizedUrl.includes('-tablet');
+    
+    // Disabled WebP for now since our WebPs are larger (536KB vs 399KB for JPGs)
+    const useWebP = false; // Set to false until we have better WebP compression
+    
+    if (preferWebP && supportsWebP() && isBaseImage && useWebP) {
       const webpUrl = optimizedUrl.replace('.jpg', '.webp');
       if (enablePrefetch) {
         prefetchImageIfExists(webpUrl);
       }
+      const previousUrl = optimizedUrl;
       optimizedUrl = webpUrl;
+      optimizationDetails.format = 'webp';
+      optimizationDetails.webpSupported = true;
+      logOptimization('Upgraded to WebP format', { 
+        from: previousUrl, 
+        to: webpUrl,
+        expectedSizeReduction: '30-50%',
+        note: 'WebP only available for desktop images'
+      });
+    } else {
+      optimizationDetails.format = 'jpeg';
+      optimizationDetails.webpSupported = supportsWebP();
+      if (!isBaseImage && supportsWebP()) {
+        optimizationDetails.webpSkipped = 'WebP not available for mobile/tablet variants';
+      }
     }
+    
+    const duration = perfLogger.endTimer(
+      `optimize-${originalUrl}`, 
+      'OPTIMIZATION', 
+      `Image URL optimized`,
+      optimizationDetails
+    );
+    
+    optimizationDetails.optimizationTime = `${duration.toFixed(2)}ms`;
+    optimizationDetails.finalUrl = optimizedUrl;
     
     return optimizedUrl;
     
@@ -99,13 +158,18 @@ function supportsWebP(): boolean {
 const prefetchCache = new Set<string>();
 
 function prefetchImageIfExists(url: string): void {
-  if (prefetchCache.has(url)) return;
+  if (prefetchCache.has(url)) {
+    logResourceHint('prefetch (cached)', url);
+    return;
+  }
   prefetchCache.add(url);
   
   const link = document.createElement('link');
   link.rel = 'prefetch';
   link.href = url;
   link.as = 'image';
+  
+  logResourceHint('prefetch', url);
   
   // Remove after 5 seconds to avoid memory leaks
   document.head.appendChild(link);
@@ -167,11 +231,25 @@ export function createSmartImagePreloader() {
     // @ts-expect-error - navigator.connection is experimental
     const connection = navigator?.connection || navigator?.mozConnection || navigator?.webkitConnection;
     
-    if (!connection) return 'fast';
+    if (!connection) {
+      logNetworkStatus('unknown (no API)', { apiAvailable: false });
+      return 'fast';
+    }
     
     // Consider 2G/slow-2g as slow
     const slowConnections = ['slow-2g', '2g'];
-    if (slowConnections.includes(connection.effectiveType)) {
+    const effectiveType = connection.effectiveType;
+    const downlink = connection.downlink;
+    const rtt = connection.rtt;
+    
+    logNetworkStatus(effectiveType || 'unknown', {
+      effectiveType,
+      downlink: downlink ? `${downlink} Mbps` : 'unknown',
+      rtt: rtt ? `${rtt}ms` : 'unknown',
+      saveData: connection.saveData || false,
+    });
+    
+    if (slowConnections.includes(effectiveType)) {
       return 'slow';
     }
     

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getOptimalImageUrl } from '@/utils/smartImageLoader';
+import { perfLogger, logImageLoad, logPreload, logCacheStatus } from '@/utils/performanceLogger';
 
 export interface PreloadedImage {
   src: string;
@@ -78,18 +79,33 @@ export function useImagePreloader(
   // Preload a single image with smart optimization
   const preloadImage = useCallback(async (src: string): Promise<void> => {
     return new Promise((resolve, reject) => {
+      perfLogger.startTimer(`preload-${src}`);
+      
       // Check if already loaded using ref
       const existing = preloadedImagesRef.current.get(src);
       if (existing?.loaded) {
+        logCacheStatus(true, src);
+        logPreload(src, true, { 
+          fromCache: true, 
+          cacheHit: true,
+          timeToLoad: '0ms (cached)'
+        });
         resolve();
         return;
       }
 
       // Get optimal image URL for faster loading
+      // Note: This will try WebP only for desktop, and use mobile/tablet JPGs for smaller screens
       const optimizedSrc = getOptimalImageUrl(src, {
         preferWebP: true,
         useDeviceOptimizedSize: true,
         enablePrefetch: false // We're already preloading
+      });
+      
+      logImageLoad(optimizedSrc, {
+        original: src,
+        optimized: optimizedSrc !== src,
+        optimization: optimizedSrc !== src ? 'Applied' : 'None',
       });
 
       // Create image element
@@ -113,7 +129,19 @@ export function useImagePreloader(
       // Handle successful load
       img.onload = () => {
         clearTimeout(timeoutId);
+        const loadTime = perfLogger.endTimer(`preload-${src}`, 'PRELOAD', `Image preloaded successfully`, {
+          url: optimizedSrc,
+          original: src,
+          optimized: optimizedSrc !== src,
+        });
+        
         console.log(`✅ Image preloaded: ${optimizedSrc} (original: ${src})`);
+        logPreload(optimizedSrc, true, {
+          loadTime: `${loadTime.toFixed(2)}ms`,
+          size: img.naturalWidth ? `${img.naturalWidth}x${img.naturalHeight}` : 'unknown',
+          optimized: optimizedSrc !== src,
+        });
+        
         updateImageStatus(src, true, false);
         resolve();
       };
@@ -123,23 +151,56 @@ export function useImagePreloader(
         // Try original URL if optimized version failed
         if (optimizedSrc !== src) {
           console.warn(`⚠️ Optimized image failed, trying original: ${src}`);
+          logPreload(optimizedSrc, false, { 
+            error: 'Failed to load optimized version',
+            fallback: 'Trying original'
+          });
+          
           const fallbackImg = new Image();
           fallbackImg.onload = () => {
             clearTimeout(timeoutId);
+            const loadTime = perfLogger.endTimer(`preload-${src}`, 'PRELOAD', `Image preloaded (fallback)`, {
+              url: src,
+              fallback: true,
+            });
+            
             console.log(`✅ Image preloaded (fallback): ${src}`);
+            logPreload(src, true, {
+              loadTime: `${loadTime.toFixed(2)}ms`,
+              fallback: true,
+              reason: 'Optimized version failed',
+            });
+            
             updateImageStatus(src, true, false);
             resolve();
           };
           fallbackImg.onerror = () => {
             clearTimeout(timeoutId);
+            perfLogger.endTimer(`preload-${src}`, 'PRELOAD', `Failed to preload image`, {
+              url: src,
+              error: 'Both optimized and original failed',
+            });
+            
             console.error(`❌ Failed to preload image: ${src}`);
+            logPreload(src, false, { 
+              error: 'Failed to load both versions',
+              attempted: [optimizedSrc, src]
+            });
+            
             updateImageStatus(src, false, true);
             reject(new Error(`Failed to load image: ${src}`));
           };
           fallbackImg.src = src;
         } else {
           clearTimeout(timeoutId);
+          perfLogger.endTimer(`preload-${src}`, 'PRELOAD', `Failed to preload image`, {
+            url: src,
+            error: 'Load failed',
+          });
+          
           console.error(`❌ Failed to preload image: ${src}`);
+          logPreload(src, false, { error: 'Failed to load' });
+          
           updateImageStatus(src, false, true);
           reject(new Error(`Failed to load image: ${src}`));
         }

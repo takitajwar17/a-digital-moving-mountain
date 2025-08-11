@@ -3,6 +3,8 @@
  * Adds DNS prefetch, preconnect, and prefetch hints to speed up loading
  */
 
+import { logResourceHint, perfLogger } from './performanceLogger';
+
 /**
  * Add DNS prefetch hints for faster domain resolution
  */
@@ -14,7 +16,10 @@ export function addDnsPrefetch(domains: string[]) {
     link.rel = 'dns-prefetch';
     link.href = domain;
     document.head.appendChild(link);
+    logResourceHint('dns-prefetch', domain);
   });
+  
+  perfLogger.log('info', 'RESOURCE_HINT', `Added ${domains.length} DNS prefetch hints`, { domains });
 }
 
 /**
@@ -29,7 +34,10 @@ export function addPreconnect(origins: string[]) {
     link.href = origin;
     link.crossOrigin = 'anonymous';
     document.head.appendChild(link);
+    logResourceHint('preconnect', origin);
   });
+  
+  perfLogger.log('info', 'RESOURCE_HINT', `Added ${origins.length} preconnect hints`, { origins });
 }
 
 /**
@@ -38,9 +46,13 @@ export function addPreconnect(origins: string[]) {
 export function addResourcePrefetch(urls: string[], type: 'image' | 'script' | 'style' = 'image') {
   if (typeof document === 'undefined') return;
   
+  let addedCount = 0;
   urls.forEach(url => {
     // Don't add if already exists
-    if (document.querySelector(`link[href="${url}"]`)) return;
+    if (document.querySelector(`link[href="${url}"]`)) {
+      logResourceHint('prefetch (exists)', url);
+      return;
+    }
     
     const link = document.createElement('link');
     link.rel = 'prefetch';
@@ -53,7 +65,18 @@ export function addResourcePrefetch(urls: string[], type: 'image' | 'script' | '
     }
     
     document.head.appendChild(link);
+    logResourceHint('prefetch', url);
+    addedCount++;
   });
+  
+  if (addedCount > 0) {
+    perfLogger.log('info', 'RESOURCE_HINT', `Added ${addedCount} prefetch hints`, { 
+      type, 
+      total: urls.length,
+      added: addedCount,
+      skipped: urls.length - addedCount 
+    });
+  }
 }
 
 /**
