@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageSquare, Paintbrush, X, Type, PenTool } from 'lucide-react';
+import { MessageSquare, Paintbrush, X, Type, PenTool, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CommentModal from '@/components/Input/CommentModal';
 import DrawingCanvas from '@/components/Drawing/DrawingCanvas';
@@ -83,27 +83,48 @@ export default function CommentModeSelector({
         </div>
         
         {/* Mode indicators - horizontal below header, aligned right */}
-        <div className="flex gap-2 px-3 md:px-4 pb-2 justify-end">
-          <button
-            onClick={() => setMode('text')}
-            className={cn(
-              "w-6 h-6 rounded flex items-center justify-center transition-colors",
-              mode === 'text' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+        <div className="flex gap-2 px-3 md:px-4 pb-2 justify-between">
+          <div className="flex gap-2">
+            {mode === 'drawing' && canvasRef && (
+              <button
+                onClick={() => {
+                  if (canvasRef) {
+                    const ctx = canvasRef.getContext('2d');
+                    if (ctx) {
+                      ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+                      setHasDrawn(false);
+                    }
+                  }
+                }}
+                className="w-6 h-6 rounded flex items-center justify-center transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
+                title="Clear canvas"
+              >
+                <RotateCcw className="h-3 w-3" />
+              </button>
             )}
-            title="Text mode"
-          >
-            <Type className="h-3 w-3" />
-          </button>
-          <button
-            onClick={() => setMode('drawing')}
-            className={cn(
-              "w-6 h-6 rounded flex items-center justify-center transition-colors",
-              mode === 'drawing' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            )}
-            title="Drawing mode"
-          >
-            <PenTool className="h-3 w-3" />
-          </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMode('text')}
+              className={cn(
+                "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                mode === 'text' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="Text mode"
+            >
+              <Type className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => setMode('drawing')}
+              className={cn(
+                "w-6 h-6 rounded flex items-center justify-center transition-colors",
+                mode === 'drawing' ? "bg-black text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              )}
+              title="Drawing mode"
+            >
+              <PenTool className="h-3 w-3" />
+            </button>
+          </div>
         </div>
       </div>
 

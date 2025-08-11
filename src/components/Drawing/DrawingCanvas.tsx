@@ -159,7 +159,7 @@ export default function DrawingCanvas({
   // Embedded mode - just the canvas
   if (embedded) {
     return (
-      <div className={cn("w-full h-full flex items-center justify-center relative", className)}>
+      <div className={cn("w-full h-full flex items-center justify-center", className)}>
         <canvas
           ref={canvasRef}
           className={cn(
@@ -181,15 +181,6 @@ export default function DrawingCanvas({
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
         />
-        <Button
-          variant="outline"
-          onClick={clearCanvas}
-          size="sm"
-          className="absolute top-2 right-2 h-6 text-xs"
-        >
-          <RotateCcw className="h-3 w-3 mr-1" />
-          Clear
-        </Button>
       </div>
     );
   }
@@ -229,11 +220,11 @@ export default function DrawingCanvas({
             <Button
               variant="outline"
               onClick={clearCanvas}
-              size="sm"
-              className="h-6 text-xs"
+              size="icon"
+              className="h-8 w-8"
+              title="Clear canvas"
             >
-              <RotateCcw className="h-3 w-3 mr-1" />
-              Clear
+              <RotateCcw className="h-4 w-4" />
             </Button>
           </div>
         </div>
