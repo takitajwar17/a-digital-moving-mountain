@@ -24,15 +24,31 @@ function getModalTransform(
   panelDimensions: { width: number; height: number },
   clickPosition?: { x: number; y: number }
 ): { transform: string; position: 'fixed' | 'absolute'; fixedStyles?: React.CSSProperties } {
-  const modalWidth = 400; // actual modal width
-  const modalHeight = 300; // actual modal height
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const modalWidth = isMobile ? 320 : 400; // Smaller width on mobile
+  const modalHeight = isMobile ? 240 : 300; // Smaller height on mobile
   
   // Always use fixed positioning with click position
   if (typeof window !== 'undefined' && clickPosition) {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
-    // Start exactly at click position
+    // For mobile, center in viewport
+    if (isMobile) {
+      return {
+        position: 'fixed',
+        transform: 'translate(-50%, -50%)',
+        fixedStyles: {
+          top: '50%',
+          left: '50%',
+          zIndex: 99999,
+          margin: 0,
+          padding: 0
+        }
+      };
+    }
+    
+    // For desktop, position at click
     let left = clickPosition.x;
     let top = clickPosition.y;
     

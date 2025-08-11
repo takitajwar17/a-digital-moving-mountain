@@ -58,15 +58,19 @@ export default function CommentModeSelector({
 
   return (
     <div 
-      className={cn("w-[400px] h-[300px] bg-white rounded-xl border shadow-lg flex flex-col overflow-hidden", className)}
+      className={cn(
+        "bg-white rounded-xl border shadow-lg flex flex-col overflow-hidden",
+        "w-[320px] h-[240px] md:w-[400px] md:h-[300px]", // Responsive sizing
+        className
+      )}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="relative">
-        <div className="flex items-start justify-between p-4 pb-2">
-          <h2 className="text-base font-semibold">Add Comment</h2>
+        <div className="flex items-start justify-between p-3 md:p-4 pb-2">
+          <h2 className="text-sm md:text-base font-semibold">Add Comment</h2>
           {/* Close button */}
           <Button
             variant="ghost"
@@ -79,7 +83,7 @@ export default function CommentModeSelector({
         </div>
         
         {/* Mode indicators - horizontal below header, aligned right */}
-        <div className="flex gap-2 px-4 pb-2 justify-end">
+        <div className="flex gap-2 px-3 md:px-4 pb-2 justify-end">
           <button
             onClick={() => setMode('text')}
             className={cn(
@@ -104,7 +108,7 @@ export default function CommentModeSelector({
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 px-4 pb-2 min-h-0">
+      <div className="flex-1 px-3 md:px-4 pb-2 min-h-0">
         {mode === 'text' ? (
           <div className="h-full flex flex-col">
             <textarea
@@ -117,8 +121,8 @@ export default function CommentModeSelector({
                 }
               }}
               placeholder="Share your thoughts..."
-              className="flex-1 w-full resize-none border rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
-              style={{ minHeight: '120px' }}
+              className="flex-1 w-full resize-none border rounded-lg p-2 md:p-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+              style={{ minHeight: '80px' }}
             />
             <div className="text-xs text-gray-500 text-right mt-1">
               {text.length}/{maxLength}
@@ -141,7 +145,7 @@ export default function CommentModeSelector({
       </div>
 
       {/* Bottom section */}
-      <div className="flex items-center justify-between px-4 pb-4">
+      <div className="flex items-center justify-between px-3 md:px-4 pb-3 md:pb-4">
         <div className="flex items-center gap-1">
           {/* Color picker - show all three colors */}
           <div className="flex gap-1">
