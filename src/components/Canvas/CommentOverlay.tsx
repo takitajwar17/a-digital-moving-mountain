@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Comment } from '@/types/comment';
 import CommentModeSelector from '../Comments/CommentModeSelector';
@@ -148,20 +149,20 @@ export default function CommentOverlay({
         </div>
       ))}
 
-      {/* New Comment Input */}
-      {isAddingComment && commentPosition && (() => {
+      {/* New Comment Input - Portal to body to escape overflow constraints */}
+      {isAddingComment && commentPosition && typeof document !== 'undefined' && (() => {
         const positioning = getModalTransform(commentPosition, panelDimensions, clickScreenPosition || undefined);
         
-        return (
+        const modalElement = (
           <div
-            className="pointer-events-auto z-50"
+            className="pointer-events-auto"
             style={{
               position: 'fixed',
               left: positioning.fixedStyles?.left,
               top: positioning.fixedStyles?.top,
               transform: 'translate(-50%, -50%)',
               touchAction: 'manipulation',
-              zIndex: 9999,
+              zIndex: 99999, // Very high z-index to appear above everything
               margin: 0,
               padding: 0
             }}
@@ -173,6 +174,9 @@ export default function CommentOverlay({
             />
           </div>
         );
+        
+        // Use portal to render outside of the overflow:hidden containers
+        return createPortal(modalElement, document.body);
       })()}
     </div>
   );
