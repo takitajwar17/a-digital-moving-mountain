@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getOptimalImageUrl } from '@/utils/smartImageLoader';
 
 export interface PreloadedImage {
   src: string;
@@ -74,7 +75,7 @@ export function useImagePreloader(
     });
   }, []); // No dependencies to avoid circular updates
 
-  // Preload a single image
+  // Preload a single image with smart optimization
   const preloadImage = useCallback(async (src: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       // Check if already loaded using ref
@@ -84,34 +85,68 @@ export function useImagePreloader(
         return;
       }
 
+      // Get optimal image URL for faster loading
+      const optimizedSrc = getOptimalImageUrl(src, {
+        preferWebP: true,
+        useDeviceOptimizedSize: true,
+        enablePrefetch: false // We're already preloading
+      });
+
       // Create image element
       const img = new Image();
       
+      // Set performance hints
+      if ('loading' in img) {
+        img.loading = 'eager';
+      }
+      if ('decoding' in img) {
+        img.decoding = 'async';
+      }
+      
       // Set up timeout
       const timeoutId = setTimeout(() => {
-        console.warn(`⏰ Image preload timeout: ${src}`);
+        console.warn(`⏰ Image preload timeout: ${optimizedSrc}`);
         updateImageStatus(src, false, true);
-        reject(new Error(`Timeout loading image: ${src}`));
+        reject(new Error(`Timeout loading image: ${optimizedSrc}`));
       }, timeout);
 
       // Handle successful load
       img.onload = () => {
         clearTimeout(timeoutId);
-        console.log(`✅ Image preloaded: ${src}`);
+        console.log(`✅ Image preloaded: ${optimizedSrc} (original: ${src})`);
         updateImageStatus(src, true, false);
         resolve();
       };
 
-      // Handle error
+      // Handle error - fallback to original URL
       img.onerror = () => {
-        clearTimeout(timeoutId);
-        console.error(`❌ Failed to preload image: ${src}`);
-        updateImageStatus(src, false, true);
-        reject(new Error(`Failed to load image: ${src}`));
+        // Try original URL if optimized version failed
+        if (optimizedSrc !== src) {
+          console.warn(`⚠️ Optimized image failed, trying original: ${src}`);
+          const fallbackImg = new Image();
+          fallbackImg.onload = () => {
+            clearTimeout(timeoutId);
+            console.log(`✅ Image preloaded (fallback): ${src}`);
+            updateImageStatus(src, true, false);
+            resolve();
+          };
+          fallbackImg.onerror = () => {
+            clearTimeout(timeoutId);
+            console.error(`❌ Failed to preload image: ${src}`);
+            updateImageStatus(src, false, true);
+            reject(new Error(`Failed to load image: ${src}`));
+          };
+          fallbackImg.src = src;
+        } else {
+          clearTimeout(timeoutId);
+          console.error(`❌ Failed to preload image: ${src}`);
+          updateImageStatus(src, false, true);
+          reject(new Error(`Failed to load image: ${src}`));
+        }
       };
 
-      // Start loading
-      img.src = src;
+      // Start loading with optimized URL
+      img.src = optimizedSrc;
     });
   }, [timeout, updateImageStatus]);
 

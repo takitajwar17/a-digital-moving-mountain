@@ -6,6 +6,7 @@ import { ArtworkPanel as ArtworkPanelType } from '@/types/artwork';
 import { Comment } from '@/types/comment';
 import CommentOverlay from './CommentOverlay';
 import ZoomControls from './ZoomControls';
+import { getOptimalImageUrl } from '@/utils/smartImageLoader';
 
 interface ArtworkPanelProps {
   panel: ArtworkPanelType;
@@ -210,6 +211,13 @@ export default function ArtworkPanel({
 
   // Determine if we should show loading state
   const shouldShowLoading = !imageLoaded && !imageError;
+  
+  // Get optimal image URL for faster loading (transparent to display)
+  const optimizedImageUrl = getOptimalImageUrl(panel.imageUrl, {
+    preferWebP: true,
+    useDeviceOptimizedSize: true,
+    enablePrefetch: true
+  });
 
   return (
     <div className={`relative overflow-hidden bg-black ${className}`} style={{ width: 'fit-content' }}>
@@ -237,7 +245,7 @@ export default function ArtworkPanel({
           }}
         >
           <Image
-            src={panel.imageUrl}
+            src={optimizedImageUrl}
             alt={`Artwork ${panel.year}`}
             width={panel.dimensions.width}
             height={panel.dimensions.height}

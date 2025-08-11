@@ -8,6 +8,8 @@ import { useImagePreloader, usePreloadStats } from '@/hooks/useImagePreloader';
 import { Comment, CommentFilter } from '@/types/comment';
 import { getDeviceType, isKioskMode } from '@/utils/deviceDetection';
 import { findAvailablePosition } from '@/utils/coordinateSystem';
+import { getOptimalImageUrl } from '@/utils/smartImageLoader';
+import { initializePerformanceHints, smartPrefetch } from '@/utils/resourceHints';
 
 // Canvas components
 import ArtworkPanel from '@/components/Canvas/ArtworkPanel';
@@ -63,16 +65,35 @@ export default function Home() {
   // Available data for filters
   const availableYears = getAvailableYears();
 
-  // Lazy loading - only preload current and adjacent images
+  // Smart preloading - adaptively choose which images to preload
   const imagesToPreload = useMemo(() => {
     const currentIndex = availableYears.indexOf(currentYear);
     const indices = [];
-    // Current image
+    
+    // Always include current image
     indices.push(currentIndex);
-    // Previous image
-    if (currentIndex > 0) indices.push(currentIndex - 1);
-    // Next image
-    if (currentIndex < availableYears.length - 1) indices.push(currentIndex + 1);
+    
+    // Add adjacent images based on connection quality
+    const getConnectionQuality = () => {
+      if (typeof navigator === 'undefined') return 'fast';
+      // @ts-expect-error - experimental API
+      const connection = navigator?.connection || navigator?.mozConnection || navigator?.webkitConnection;
+      if (!connection) return 'fast';
+      return ['slow-2g', '2g'].includes(connection.effectiveType) ? 'slow' : 'fast';
+    };
+    
+    const connectionQuality = getConnectionQuality();
+    const preloadRadius = connectionQuality === 'slow' ? 1 : 2;
+    
+    // Add previous images
+    for (let i = 1; i <= preloadRadius && currentIndex - i >= 0; i++) {
+      indices.push(currentIndex - i);
+    }
+    
+    // Add next images  
+    for (let i = 1; i <= preloadRadius && currentIndex + i < availableYears.length; i++) {
+      indices.push(currentIndex + i);
+    }
     
     return indices.map(i => sampleArtworkPanels[i]?.imageUrl).filter(Boolean);
   }, [availableYears, currentYear]);
@@ -110,11 +131,24 @@ export default function Home() {
     if (nextYear) handleYearChange(nextYear);
   };
 
-  // Initialize device detection
+  // Initialize device detection and performance hints
   useEffect(() => {
     setDeviceType(getDeviceType());
     setKiosk(isKioskMode());
+    
+    // Initialize performance hints for faster loading
+    initializePerformanceHints();
   }, []);
+  
+  // Smart prefetch for next likely images
+  useEffect(() => {
+    const currentIndex = availableYears.indexOf(currentYear);
+    smartPrefetch(
+      currentIndex,
+      availableYears.length,
+      (index) => getOptimalImageUrl(sampleArtworkPanels[index]?.imageUrl || '')
+    );
+  }, [currentYear, availableYears]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -326,7 +360,7 @@ export default function Home() {
           {prevPanel && (
             <div className="relative transition-all duration-300 cursor-pointer hover:opacity-60" onClick={goToPrevious}>
               <Image
-                src={prevPanel.imageUrl}
+                src={getOptimalImageUrl(prevPanel.imageUrl, { useDeviceOptimizedSize: true, preferWebP: true })}
                 alt={`Artwork ${prevPanel.year}`}
                 width={800}
                 height={600}
@@ -374,7 +408,7 @@ export default function Home() {
           {nextPanel && (
             <div className="relative transition-all duration-300 cursor-pointer hover:opacity-60" onClick={goToNext}>
               <Image
-                src={nextPanel.imageUrl}
+                src={getOptimalImageUrl(nextPanel.imageUrl, { useDeviceOptimizedSize: true, preferWebP: true })}
                 alt={`Artwork ${nextPanel.year}`}
                 width={800}
                 height={600}
