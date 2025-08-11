@@ -19,13 +19,7 @@ const titilliumWeb = Titillium_Web({
 
 export const metadata: Metadata = {
   title: "A Digital Moving Mountain",
-  description: "Interactive digital canvas based on 'A Moving Mountain' by Dr. Gan Yu",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "A Digital Moving Mountain"
-  }
+  description: "Interactive digital canvas based on 'A Moving Mountain' by Dr. Gan Yu"
 };
 
 export default function RootLayout({
@@ -35,38 +29,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="A Digital Moving Mountain" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-      </head>
       <body
         className={`${manrope.variable} ${titilliumWeb.variable} antialiased`}
       >
         {children}
         <Toaster position="top-center" />
         <Analytics />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(function(error) {
-                      console.log('ServiceWorker registration failed: ', error);
-                    });
-                });
-              }
-            `
-          }}
-        />
       </body>
     </html>
   );
