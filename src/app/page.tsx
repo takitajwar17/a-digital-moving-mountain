@@ -22,8 +22,6 @@ import {
 export default function Home() {
   const [filter] = useState<CommentFilter>({ approved: true });
   const [currentYear, setCurrentYear] = useState(2008); // Start with 2008 (financial crisis)
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
   
   // Handle QR code parameters on mount
   useEffect(() => {
@@ -97,23 +95,10 @@ export default function Home() {
   const prevPanel = prevYear ? sampleArtworkPanels.find(p => p.year === prevYear) : null;
   const nextPanel = nextYear ? sampleArtworkPanels.find(p => p.year === nextYear) : null;
 
-  // Handle year navigation with animation
+  // Handle year navigation
   const handleYearChange = (year: number) => {
-    if (isAnimating || year === currentYear) return;
-    
-    const currentIdx = availableYears.indexOf(currentYear);
-    const newIdx = availableYears.indexOf(year);
-    
-    setAnimationDirection(newIdx > currentIdx ? 'left' : 'right');
-    setIsAnimating(true);
-    
-    setTimeout(() => {
-      setCurrentYear(year);
-      setTimeout(() => {
-        setIsAnimating(false);
-        setAnimationDirection(null);
-      }, 50);
-    }, 300);
+    if (year === currentYear) return;
+    setCurrentYear(year);
   };
 
   // Navigation handlers
@@ -190,7 +175,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentYear, availableYears, prevYear, nextYear, isAnimating]);
+  }, [currentYear, availableYears, prevYear, nextYear]);
 
   // Handle comment addition
   const handleCommentAdd = async (position: { x: number; y: number }, text?: string, imageData?: string, color?: string) => {
@@ -269,15 +254,9 @@ export default function Home() {
 
         {/* Main content area with image */}
         <div className="h-full w-full flex items-center justify-center relative">
-          {/* Image container with animation - full width */}
+          {/* Image container - full width */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div 
-              className={`relative transition-transform duration-300 ease-in-out w-full h-full flex items-center justify-center ${
-                isAnimating && animationDirection === 'left' ? '-translate-x-full' :
-                isAnimating && animationDirection === 'right' ? 'translate-x-full' :
-                'translate-x-0'
-              }`}
-            >
+            <div className="relative w-full h-full flex items-center justify-center">
               <ArtworkPanel
                 panel={currentPanel}
                 comments={panelComments}
@@ -297,9 +276,9 @@ export default function Home() {
           {/* Left navigation arrow - over the image */}
           <button
             onClick={goToPrevious}
-            disabled={!prevPanel || isAnimating}
+            disabled={!prevPanel}
             className={`absolute left-2 z-30 w-12 h-12 flex items-center justify-center rounded-full transition-all ${
-              prevPanel && !isAnimating
+              prevPanel
                 ? 'bg-black/70 text-white hover:bg-black/90' 
                 : 'bg-black/30 text-gray-500 cursor-not-allowed'
             }`}
@@ -312,9 +291,9 @@ export default function Home() {
           {/* Right navigation arrow - over the image */}
           <button
             onClick={goToNext}
-            disabled={!nextPanel || isAnimating}
+            disabled={!nextPanel}
             className={`absolute right-2 z-30 w-12 h-12 flex items-center justify-center rounded-full transition-all ${
-              nextPanel && !isAnimating
+              nextPanel
                 ? 'bg-black/70 text-white hover:bg-black/90' 
                 : 'bg-black/30 text-gray-500 cursor-not-allowed'
             }`}
@@ -345,7 +324,7 @@ export default function Home() {
         {/* Left side - Previous image */}
         <div className="flex-1 flex items-center justify-center relative">
           {prevPanel && (
-            <div className={`relative transition-all duration-300 ${!isAnimating ? 'cursor-pointer hover:opacity-60' : 'cursor-not-allowed'}`} onClick={!isAnimating ? goToPrevious : undefined}>
+            <div className="relative transition-all duration-300 cursor-pointer hover:opacity-60" onClick={goToPrevious}>
               <Image
                 src={prevPanel.imageUrl}
                 alt={`Artwork ${prevPanel.year}`}
@@ -365,13 +344,7 @@ export default function Home() {
 
         {/* Center - Main image */}
         <div className="flex-shrink-0 flex items-center justify-center relative overflow-hidden">
-          <div 
-            className={`transition-transform duration-300 ease-in-out ${
-              isAnimating && animationDirection === 'left' ? '-translate-x-full' :
-              isAnimating && animationDirection === 'right' ? 'translate-x-full' :
-              'translate-x-0'
-            }`}
-          >
+          <div>
             <ArtworkPanel
               panel={currentPanel}
               comments={panelComments}
@@ -399,7 +372,7 @@ export default function Home() {
         {/* Right side - Next image */}
         <div className="flex-1 flex items-center justify-center relative">
           {nextPanel && (
-            <div className={`relative transition-all duration-300 ${!isAnimating ? 'cursor-pointer hover:opacity-60' : 'cursor-not-allowed'}`} onClick={!isAnimating ? goToNext : undefined}>
+            <div className="relative transition-all duration-300 cursor-pointer hover:opacity-60" onClick={goToNext}>
               <Image
                 src={nextPanel.imageUrl}
                 alt={`Artwork ${nextPanel.year}`}
