@@ -26,28 +26,37 @@ function getModalTransform(
   const modalWidth = 400; // actual modal width
   const modalHeight = 300; // actual modal height
   
-  // Always use fixed positioning to escape container constraints
+  // Always use fixed positioning with click position
   if (typeof window !== 'undefined' && clickPosition) {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
+    // Start exactly at click position
     let left = clickPosition.x;
     let top = clickPosition.y;
     
-    // Adjust horizontal position to keep modal within viewport
-    if (left + modalWidth / 2 > windowWidth) {
-      left = windowWidth - modalWidth / 2 - 20; // 20px margin
-    }
-    if (left - modalWidth / 2 < 0) {
-      left = modalWidth / 2 + 20; // 20px margin
+    // Only adjust if modal would go outside viewport
+    const rightEdge = left + modalWidth / 2;
+    const leftEdge = left - modalWidth / 2;
+    const bottomEdge = top + modalHeight / 2;
+    const topEdge = top - modalHeight / 2;
+    
+    // Adjust horizontal position if needed
+    if (rightEdge > windowWidth - 20) {
+      // Too far right, shift left to fit
+      left = windowWidth - modalWidth / 2 - 20;
+    } else if (leftEdge < 20) {
+      // Too far left, shift right to fit
+      left = modalWidth / 2 + 20;
     }
     
-    // Adjust vertical position to keep modal within viewport
-    if (top + modalHeight / 2 > windowHeight) {
-      top = windowHeight - modalHeight / 2 - 20; // 20px margin
-    }
-    if (top - modalHeight / 2 < 0) {
-      top = modalHeight / 2 + 20; // 20px margin
+    // Adjust vertical position if needed
+    if (bottomEdge > windowHeight - 20) {
+      // Too far down, shift up to fit
+      top = windowHeight - modalHeight / 2 - 20;
+    } else if (topEdge < 20) {
+      // Too far up, shift down to fit
+      top = modalHeight / 2 + 20;
     }
     
     return {
@@ -63,7 +72,7 @@ function getModalTransform(
     };
   }
   
-  // Fallback for mobile or when no click position
+  // Fallback when no click position
   return {
     position: 'fixed',
     transform: 'translate(-50%, -50%)',
@@ -142,38 +151,27 @@ export default function CommentOverlay({
       {/* New Comment Input */}
       {isAddingComment && commentPosition && (() => {
         const positioning = getModalTransform(commentPosition, panelDimensions, clickScreenPosition || undefined);
-        const isMobile = positioning.position === 'fixed';
         
         return (
-          <>
-            {/* Mobile backdrop */}
-            {isMobile && (
-              <div
-                className="fixed inset-0 bg-black bg-opacity-50 z-40 pointer-events-auto"
-                onClick={onCommentCancel}
-                onTouchStart={onCommentCancel}
-                style={{ zIndex: 999 }}
-              />
-            )}
-            
-            <div
-              className="pointer-events-auto z-50"
-              style={{
-                position: positioning.position,
-                left: positioning.position === 'fixed' ? undefined : `${commentPosition.x * panelDimensions.width}px`,
-                top: positioning.position === 'fixed' ? undefined : `${commentPosition.y * panelDimensions.height}px`,
-                transform: positioning.transform,
-                touchAction: 'manipulation',
-                ...positioning.fixedStyles
-              }}
-            >
-              <CommentModeSelector
-                onSubmitText={onCommentSubmit}
-                onSubmitDrawing={onDrawingSubmit}
-                onCancel={onCommentCancel}
-              />
-            </div>
-          </>
+          <div
+            className="pointer-events-auto z-50"
+            style={{
+              position: 'fixed',
+              left: positioning.fixedStyles?.left,
+              top: positioning.fixedStyles?.top,
+              transform: 'translate(-50%, -50%)',
+              touchAction: 'manipulation',
+              zIndex: 9999,
+              margin: 0,
+              padding: 0
+            }}
+          >
+            <CommentModeSelector
+              onSubmitText={onCommentSubmit}
+              onSubmitDrawing={onDrawingSubmit}
+              onCancel={onCommentCancel}
+            />
+          </div>
         );
       })()}
     </div>
